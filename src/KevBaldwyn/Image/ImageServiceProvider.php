@@ -12,6 +12,11 @@ class ImageServiceProvider extends ServiceProvider {
 	 */
 	protected $defer = false;
 
+	public function boot() {
+		
+		include(__DIR__.'/routes.php');
+	}
+
 	/**
 	 * Register the service provider.
 	 *
@@ -22,7 +27,6 @@ class ImageServiceProvider extends ServiceProvider {
 		
 		Config::package('kevbaldwyn/image', __DIR__.'/../../config');
 
-		include(__DIR__.'/routes.php');
 
 		$this->registerWorker();
 		$this->registerCache();
@@ -62,7 +66,8 @@ class ImageServiceProvider extends ServiceProvider {
 		$this->app->bind('kevbaldwyn.image', function() use ($app) {
 			return new \KevBaldwyn\Image\Image($app['kevbaldwyn.image.worker'], 
 											   $app['kevbaldwyn.image.cache'],
-											   Config::get('image::cache.lifetime'));
+											   Config::get('image::cache.lifetime'),
+											   Config::get('image::route'));
 		});
 
 	}

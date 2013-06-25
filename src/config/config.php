@@ -7,6 +7,8 @@ return array(
 	 */
 	'worker' => '',
 
+	'route' => '/_img/',
+
 	/**
 	 * note this is the server path to the file 
 	 * from base_path()

@@ -1,5 +1,6 @@
 <?php
 
-Route::get('_img', function() {
+$route = rtrim(\Config::get('image::route'), '/');
+Route::get($route, function() {
 	Image::serve();
 });

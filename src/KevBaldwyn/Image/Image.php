@@ -9,13 +9,14 @@ class Image {
 	private $cache;
 	private $cacheLifetime; // minutes
 
-	private $pathString = '/_img/?';
+	private $pathString;
 
 
-	public function __construct($worker, \Illuminate\Cache\CacheManager $cache, $cacheLifetime) {
+	public function __construct($worker, \Illuminate\Cache\CacheManager $cache, $cacheLifetime, $pathString) {
 		$this->worker = $worker;
 		$this->cache = $cache;
 		$this->cacheLifetime = $cacheLifetime;
+		$this->pathString = $pathString . '?';
 	}
 
 
