@@ -6,12 +6,16 @@ use Input;
 class Image {
 
 	private $worker;
+	private $cache;
+	private $cacheLifetime; // minutes
 
 	private $pathString = '/_img/?';
 
 
-	public function __construct($worker) {
+	public function __construct($worker, \Illuminate\Cache\CacheManager $cache, $cacheLifetime) {
 		$this->worker = $worker;
+		$this->cache = $cache;
+		$this->cacheLifetime = $cacheLifetime;
 	}
 
 
@@ -58,13 +62,30 @@ class Image {
 
 		$imgPath = base_path() . Input::get(Config::get('image::vars.image'));
 		
-		if(!$this->worker->load($imgPath)
-						 ->transform($operations)
-						 ->show()) {
+		$checksum = md5($imgPath . ';' . serialize($operations));
+		$cacheData = $this->cache->get($checksum);
+		if($cacheData) {
+			// using cache
+			if (($string = $cacheData['data']) && ($mimetype = $cacheData['mime'])) {
+				header('Content-Type: '.$mimetype);
+				die($string);
+			}
+		}else{
+			$this->worker->load($imgPath)
+						 ->transform($operations);
+			$string = $this->worker->getString();
+			$mime   = $this->worker->getMimeType();	
+			
+			$cacheData = array('mime' => $mime,
+							   'data' => $string);
 
-			throw new \Exception($this->worker->getError()->getMessage());
+			$this->cache->put($checksum, $cacheData, $this->cacheLifetime);
 
-		}
+			$this->worker->show();
+			
+			//throw new \Exception($this->worker->getError()->getMessage());
+			
+		}	
 		
 	}
 

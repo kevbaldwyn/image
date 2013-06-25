@@ -20,6 +20,10 @@ return array(
 		'image'           => 'img',
 		'responsive_flag' => 'responsive',
 		'transform'       => 'transform'
+	),
+
+	'cache' => array(
+		'lifetime' => 1
 	)
  
 );
