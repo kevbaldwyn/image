@@ -22,18 +22,12 @@ class Image {
 
 	public function responsive(/* any number of params */) {
 		$params = func_get_args();
-		if(count($params) == 0) {
-			throw new \Exception('Not enough params provided');
+		if(count($params) <= 1) {
+			throw new \Exception('Not enough params provided to generate a responsive image');
 		}
 		
-		$rule = $params[0];
+		list($rule, $transform) = $this->getPathOptions($params);
 
-		foreach($params as $key => $param) {
-			if($key > 0) {
-				$transformA[] = $param;
-			}
-		}
-		$transform = implode(',', $transformA);
 		// write out the reposinsive url part
 		$this->pathString .= ';' . $rule . ':' . $transform . '&' . Config::get('image::vars.responsive_flag') . '=true';
 		return $this;
@@ -42,18 +36,11 @@ class Image {
 
 	public function path(/* any number of params */) {
 		$params = func_get_args();
-		if(count($params) == 0) {
-			throw new \Exception('Not enough params provided');
+		if(count($params) <= 1) {
+			throw new \Exception('Not enough params provided to generate an image');
 		}
 		
-		$img = $params[0];
-
-		foreach($params as $key => $param) {
-			if($key > 0) {
-				$transformA[] = $param;
-			}
-		}
-		$transform = implode(',', $transformA);
+		list($img, $transform) = $this->getPathOptions($params);
 
 		// write out the resize path
 		$this->pathString .= Config::get('image::vars.image') . '=' . $img;
@@ -114,6 +101,22 @@ class Image {
 
 	public function __toString() {
 		return $this->pathString;
+	}
+
+
+	private function getPathOptions($params) {
+
+		$first = $params[0];
+
+		foreach($params as $key => $param) {
+			if($key > 0) {
+				$transformA[] = $param;
+			}
+		}
+		$transform = implode(',', $transformA);
+
+		return array($first, $transform);
+
 	}
 
 }
