@@ -33,7 +33,7 @@ class ImageServiceProvider extends ServiceProvider {
             // trying to keep image cache separate from other cache
             $config = array();
             $config['config']['cache.driver'] = 'file';
-            $config['config']['cache.path'] = storage_path() . '/cache/images';
+            $config['config']['cache.path'] = storage_path() . '/cache/' . Config::get('image::cache.path');
             $config['files'] = new \Illuminate\Filesystem\Filesystem;
             return new \Illuminate\Cache\CacheManager($config);
 		});

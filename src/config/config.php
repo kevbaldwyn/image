@@ -23,7 +23,8 @@ return array(
 	),
 
 	'cache' => array(
-		'lifetime' => 1
+		'lifetime' => 1,
+		'path'     => 'images' // /app/storage/cache/{images}
 	)
  
 );
