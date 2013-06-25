@@ -1,6 +1,6 @@
 {
     "name": "kevbaldwyn/image",
-    "description": "A package to aid generating automatically resized images on the fly and generating responsive images.",
+    "description": "A Laravel 4 package to aid generating automatically resized images on the fly and generating responsive images.",
     "keywords":["laravel", "laravel 4", "imagecow", "image", "responsive", "resize"],
     "authors": [
         {
