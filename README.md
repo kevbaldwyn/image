@@ -41,6 +41,8 @@ Install as any other Laravel 4 package:
 
     $ php artisan config:publish kevbaldwyn/image
 
+6) Copy the /vendor/imagecow/imagecow/Imagecow/Imagecow.js file to a publicly accessible web directory. The default path is set as /public/js/Imagecow.js, but whatever it is set as in the config the file must exist.
+
 ## Usage
 ### Standard
 To provide image links on your templates use like so:
