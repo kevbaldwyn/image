@@ -62,28 +62,33 @@ class Image {
 
 		$imgPath = base_path() . Input::get(Config::get('image::vars.image'));
 		
-		$checksum = md5($imgPath . ';' . serialize($operations));
+		$checksum  = md5($imgPath . ';' . serialize($operations));
 		$cacheData = $this->cache->get($checksum);
+		
 		if($cacheData) {
+
 			// using cache
 			if (($string = $cacheData['data']) && ($mimetype = $cacheData['mime'])) {
 				header('Content-Type: '.$mimetype);
 				die($string);
+			}else{
+				throw new \Exception('There was an error with the image cache');
 			}
+
 		}else{
+
 			$this->worker->load($imgPath)
 						 ->transform($operations);
-			$string = $this->worker->getString();
-			$mime   = $this->worker->getMimeType();	
 			
-			$cacheData = array('mime' => $mime,
-							   'data' => $string);
+			$cacheData = array('mime' => $this->worker->getMimeType(),
+							   'data' => $this->worker->getString());
 
 			$this->cache->put($checksum, $cacheData, $this->cacheLifetime);
 
 			$this->worker->show();
 			
-			//throw new \Exception($this->worker->getError()->getMessage());
+			// if the script didn't die then it will have an error (Imagecow::show() dies when it returns image data)
+			throw new \Exception($this->worker->getError()->getMessage());
 			
 		}	
 		
