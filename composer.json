@@ -1,0 +1,21 @@
+{
+    "name": "kevbaldwyn/image",
+    "description": "A package to aid generating automatically resized images on the fly and generating responsive images.",
+    "authors": [
+        {
+            "name": "Kevin Baldwyn",
+            "email": "kevin@purepixel.co.uk"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "illuminate/support": "4.0.x",
+        "imagecow/imagecow": "dev-master"
+    },
+    "autoload": {
+        "psr-0": {
+            "KevBaldwyn\\Image": "src/"
+        }
+    },
+    "minimum-stability": "dev"
+}
