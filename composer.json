@@ -18,5 +18,13 @@
             "KevBaldwyn\\Image": "src/"
         }
     },
+    "scripts": {
+        "post-install-cmd": [
+            "php artisan kevbaldwyn:image:moveasset"
+        ],
+        "post-update-cmd": [
+            "php artisan kevbaldwyn:image:moveasset"
+        ]
+    },
     "minimum-stability": "dev"
 }

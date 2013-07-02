@@ -27,10 +27,11 @@ class ImageServiceProvider extends ServiceProvider {
 		
 		Config::package('kevbaldwyn/image', __DIR__.'/../../config');
 
-
 		$this->registerWorker();
 		$this->registerCache();
 		$this->registerImage();
+
+		$this->registerCommands();
 
 	}
 
@@ -70,6 +71,16 @@ class ImageServiceProvider extends ServiceProvider {
 											   Config::get('image::route'));
 		});
 
+	}
+
+
+	private function registerCommands() {
+
+		$this->app['command.kevbaldwyn.image.moveasset'] = $this->app->share(function($app) {
+			return new Commands\MoveAssetCommand();
+		});
+				
+		$this->commands('command.kevbaldwyn.image.moveasset');
 	}
 
 
