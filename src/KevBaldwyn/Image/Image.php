@@ -64,7 +64,9 @@ class Image {
 			$operations = Input::get(Config::get('image::vars.transform'));
 		}
 
-		$imgPath = base_path() . Input::get(Config::get('image::vars.image'));
+		// is there ant merit in this being base_path()?
+		// if it was base_path() then any image on the filesystem could be served - is this actually desirable?
+		$imgPath = public_path() . Input::get(Config::get('image::vars.image'));
 		
 		$checksum  = md5($imgPath . ';' . serialize($operations));
 		$cacheData = $this->cache->get($checksum);
