@@ -9,6 +9,7 @@ class Image {
 	private $cache;
 	private $cacheLifetime; // minutes
 
+	private $pathStringbase = '';
 	private $pathString;
 
 
@@ -16,7 +17,7 @@ class Image {
 		$this->worker = $worker;
 		$this->cache = $cache;
 		$this->cacheLifetime = $cacheLifetime;
-		$this->pathString = $pathString . '?';
+		$this->pathStringBase = $pathString . '?';
 	}
 
 
@@ -40,6 +41,7 @@ class Image {
 
 
 	public function path(/* any number of params */) {
+		
 		$params = func_get_args();
 		if(count($params) <= 1) {
 			throw new \Exception('Not enough params provided to generate an image');
@@ -48,6 +50,7 @@ class Image {
 		list($img, $transform) = $this->getPathOptions($params);
 
 		// write out the resize path
+		$this->pathString = $this->pathStringBase;
 		$this->pathString .= Config::get('image::vars.image') . '=' . $img;
 		$this->pathString .= '&' . Config::get('image::vars.transform') . '=' . $transform;
 		return $this;
