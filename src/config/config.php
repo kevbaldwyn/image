@@ -5,7 +5,7 @@ return array(
 	/**
 	 * the image worker (GD / Immagick)
 	 */
-	'worker' => '',
+	'worker' => 'Gd',
 
 	'route' => '/_img',
 
