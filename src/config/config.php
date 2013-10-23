@@ -3,7 +3,7 @@
 return array(
 
 	/**
-	 * the image worker (GD / Immagick)
+	 * the image worker, must be "Gd" or "Imagick"
 	 */
 	'worker' => 'Gd',
 
