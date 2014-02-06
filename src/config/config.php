@@ -16,6 +16,11 @@ return array(
 	'js_path' => '/public/js/Imagecow.js',
 
 	/**
+	 * path to placeholder image if no image found
+	 */
+	'placeholder' => '/images/thumb.gif',
+	
+	/**
 	 * various $_GET variables
 	 */
 	'vars' => array(

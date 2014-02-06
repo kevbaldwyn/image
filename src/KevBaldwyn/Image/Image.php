@@ -48,7 +48,9 @@ class Image {
 		}
 		
 		list($img, $transform) = $this->getPathOptions($params);
-
+		if(!file_exists ($img))
+			$img = Config::get('image::placeholder');
+			
 		// write out the resize path
 		$this->pathString = $this->pathStringBase;
 		$this->pathString .= Config::get('image::vars.image') . '=' . $img;
