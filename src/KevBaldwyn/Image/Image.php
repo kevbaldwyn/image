@@ -2,6 +2,7 @@
 
 use Config;
 use Input;
+use App;
 
 class Image {
 
@@ -48,9 +49,17 @@ class Image {
 		}
 		
 		list($img, $transform) = $this->getPathOptions($params);
-		if(!file_exists ($img))
+
+		if (App::environment('local'))
+		{
+			$checkFile = ltrim($img, '/');
+		}else{
+			$checkFile = $img;
+		}
+
+		if(!file_exists ($checkFile))
 			$img = Config::get('image::placeholder');
-			
+
 		// write out the resize path
 		$this->pathString = $this->pathStringBase;
 		$this->pathString .= Config::get('image::vars.image') . '=' . $img;
@@ -72,9 +81,8 @@ class Image {
 		
 		$checksum  = md5($imgPath . ';' . serialize($operations));
 		$cacheData = $this->cache->get($checksum);
-		
-		if($cacheData) {
 
+		if($cacheData) {
 			// using cache
 			if (($string = $cacheData['data']) && ($mimetype = $cacheData['mime'])) {
 				header('Content-Type: '.$mimetype);
