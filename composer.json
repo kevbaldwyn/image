@@ -4,12 +4,12 @@
     "keywords":["laravel", "laravel 4", "imagecow", "image", "responsive", "resize"],
     "authors": [
 		{
-            "name": "Kevin Baldwyn",
-            "email": "kevin@purepixel.co.uk"
-        },
-        {
             "name": "Adam Greer",
             "email": "iveoles@gmail.com"
+        },
+		{
+            "name": "Kevin Baldwyn",
+            "email": "kevin@purepixel.co.uk"
         }
     ],
     "require": {
