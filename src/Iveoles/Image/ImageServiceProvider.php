@@ -27,23 +27,12 @@ class ImageServiceProvider extends ServiceProvider {
 		
 		Config::package('iveoles/image', __DIR__.'/../../config');
 
-		$this->registerWorker();
 		$this->registerCache();
 		$this->registerImage();
 
 		$this->registerCommands();
 
 	}
-
-
-	private function registerWorker() {
-
-		$this->app->bind('iveoles.image.worker', function() {
-			return \Imagecow\Image::create(Config::get('image::worker'));
-		});
-
-	}
-
 
 	private function registerCache() {
 
@@ -65,8 +54,7 @@ class ImageServiceProvider extends ServiceProvider {
 		$app = $this->app;
 
 		$this->app->bind('iveoles.image', function() use ($app) {
-			return new \Iveoles\Image\Image($app['iveoles.image.worker'], 
-											   $app['iveoles.image.cache'],
+			return new \Iveoles\Image\Image($app['iveoles.image.cache'],
 											   Config::get('image::cache.lifetime'),
 											   Config::get('image::route'));
 		});

@@ -5,7 +5,6 @@ use Input;
 
 class Image {
 
-	private $worker;
 	private $cache;
 	private $cacheLifetime; // minutes
 
@@ -13,18 +12,11 @@ class Image {
 	private $pathString;
 
 
-	public function __construct($worker, \Illuminate\Cache\CacheManager $cache, $cacheLifetime, $pathString) {
-		$this->worker = $worker;
+	public function __construct(\Illuminate\Cache\CacheManager $cache, $cacheLifetime, $pathString) {
 		$this->cache = $cache;
 		$this->cacheLifetime = $cacheLifetime;
 		$this->pathStringBase = $pathString . '?';
 	}
-
-
-	public function getWorker() {
-		return $this->worker;
-	}
-
 
 	public function responsive(/* any number of params */) {
 		$params = func_get_args();
