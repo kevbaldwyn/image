@@ -2,7 +2,6 @@
 
 use Config;
 use Input;
-use App;
 
 class Image {
 
@@ -50,16 +49,6 @@ class Image {
 		
 		list($img, $transform) = $this->getPathOptions($params);
 
-		if (App::environment('local'))
-		{
-			$checkFile = ltrim($img, '/');
-		}else{
-			$checkFile = $img;
-		}
-
-		if(!file_exists ($checkFile))
-			$img = Config::get('image::placeholder');
-
 		// write out the resize path
 		$this->pathString = $this->pathStringBase;
 		$this->pathString .= Config::get('image::vars.image') . '=' . $img;
@@ -69,20 +58,16 @@ class Image {
 
 
 	public function serve() {
-		if(Input::get(Config::get('image::vars.responsive_flag')) == 'true') {
-			$operations = $this->worker->getResponsiveOperations($_COOKIE['Imagecow_detection'], Input::get(Config::get('image::vars.transform')));
-		}else{
-			$operations = Input::get(Config::get('image::vars.transform'));
-		}
 
-		// is there ant merit in this being base_path()?
-		// if it was base_path() then any image on the filesystem could be served - is this actually desirable?
 		$imgPath = public_path() . Input::get(Config::get('image::vars.image'));
+
+		$operations = Input::get(Config::get('image::vars.transform'));
 		
 		$checksum  = md5($imgPath . ';' . serialize($operations));
 		$cacheData = $this->cache->get($checksum);
-
+		
 		if($cacheData) {
+
 			// using cache
 			if (($string = $cacheData['data']) && ($mimetype = $cacheData['mime'])) {
 				header('Content-Type: '.$mimetype);
@@ -93,18 +78,18 @@ class Image {
 
 		}else{
 
-			$this->worker->load($imgPath)
-						 ->transform($operations);
+			$image = \Imagecow\Image::create($imgPath, Config::get('image::worker'));
+			$image->transform($operations);
 			
-			$cacheData = array('mime' => $this->worker->getMimeType(),
-							   'data' => $this->worker->getString());
+			$cacheData = array('mime' => $image->getMimeType(),
+							   'data' => $image->getString());
 
 			$this->cache->put($checksum, $cacheData, $this->cacheLifetime);
 
-			$this->worker->show();
+			$image->show();
 			
 			// if the script didn't die then it will have an error (Imagecow::show() dies when it returns image data)
-			throw new \Exception($this->worker->getError()->getMessage());
+			throw new \Exception($image->getError()->getMessage());
 			
 		}	
 		
