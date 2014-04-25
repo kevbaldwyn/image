@@ -1,4 +1,4 @@
-<?php namespace KevBaldwyn\Image\Commands;
+<?php namespace Iveoles\Image\Commands;
 
 use Config;
 use Illuminate\Console\Command;
@@ -6,7 +6,7 @@ use Illuminate\Console\Command;
 class MoveAssetCommand extends Command {
 
 
-	protected $name = 'kevbaldwyn:image:moveasset';
+	protected $name = 'iveoles:image:moveasset';
 	protected $description = 'Move required assets to public path';
 
 	

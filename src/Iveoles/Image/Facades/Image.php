@@ -1,4 +1,4 @@
-<?php namespace KevBaldwyn\Image\Facades;
+<?php namespace Iveoles\Image\Facades;
 
 use Illuminate\Support\Facades\Facade;
 
@@ -11,7 +11,7 @@ class Image extends Facade {
 	 */
 	protected static function getFacadeAccessor()
 	{
-		return 'kevbaldwyn.image';
+		return 'iveoles.image';
 	}
 
 }

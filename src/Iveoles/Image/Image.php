@@ -1,4 +1,4 @@
-<?php namespace KevBaldwyn\Image;
+<?php namespace Iveoles\Image;
 
 use Config;
 use Input;
