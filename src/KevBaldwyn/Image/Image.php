@@ -1,21 +1,20 @@
 <?php namespace KevBaldwyn\Image;
 
-use Config;
-use Input;
+use KevBaldwyn\Image\Providers\ProviderInterface;
 
 class Image {
 
 	private $worker;
-	private $cache;
+	private $provider;
 	private $cacheLifetime; // minutes
 
 	private $pathStringbase = '';
 	private $pathString;
 
 
-	public function __construct($worker, \Illuminate\Cache\CacheManager $cache, $cacheLifetime, $pathString) {
+	public function __construct($worker, ProviderInterface $provider, $cacheLifetime, $pathString) {
 		$this->worker = $worker;
-		$this->cache = $cache;
+		$this->provider = $provider;
 		$this->cacheLifetime = $cacheLifetime;
 		$this->pathStringBase = $pathString . '?';
 	}
@@ -35,7 +34,7 @@ class Image {
 		list($rule, $transform) = $this->getPathOptions($params);
 
 		// write out the reposinsive url part
-		$this->pathString .= ';' . $rule . ':' . $transform . '&' . Config::get('image::vars.responsive_flag') . '=true';
+		$this->pathString .= ';' . $rule . ':' . $transform . '&' . $this->provider->getVarResponsiveFlag() . '=true';
 		return $this;
 	}
 
@@ -51,25 +50,25 @@ class Image {
 
 		// write out the resize path
 		$this->pathString = $this->pathStringBase;
-		$this->pathString .= Config::get('image::vars.image') . '=' . $img;
-		$this->pathString .= '&' . Config::get('image::vars.transform') . '=' . $transform;
+		$this->pathString .= $this->provider->getVarImage() . '=' . $img;
+		$this->pathString .= '&' . $this->provider->getVarTransform() . '=' . $transform;
 		return $this;
 	}
 
 
 	public function serve() {
-		if(Input::get(Config::get('image::vars.responsive_flag')) == 'true') {
-			$operations = $this->worker->getResponsiveOperations($_COOKIE['Imagecow_detection'], Input::get(Config::get('image::vars.transform')));
+		if($this->provider->getQueryStringData($this->provider->getVarResponsiveFlag()) == 'true') {
+			$operations = $this->worker->getResponsiveOperations($_COOKIE['Imagecow_detection'], $this->provider->getQueryStringData($this->provider->getVarTransform()));
 		}else{
-			$operations = Input::get(Config::get('image::vars.transform'));
+			$operations = $this->provider->getQueryStringData($this->provider->getVarTransform());
 		}
 
-		// is there ant merit in this being base_path()?
-		// if it was base_path() then any image on the filesystem could be served - is this actually desirable?
-		$imgPath = public_path() . Input::get(Config::get('image::vars.image'));
+		// is there ant merit in this being $this->provider->basePath()?
+		// if it was $this->provider->basePath() then any image on the filesystem could be served - is this actually desirable?
+		$imgPath = $this->provider->publicPath() . $this->provider->getQueryStringData($this->provider->getVarImage());
 		
 		$checksum  = md5($imgPath . ';' . serialize($operations));
-		$cacheData = $this->cache->get($checksum);
+		$cacheData = $this->provider->getFromCache($checksum);
 		
 		if($cacheData) {
 
@@ -89,7 +88,7 @@ class Image {
 			$cacheData = array('mime' => $this->worker->getMimeType(),
 							   'data' => $this->worker->getString());
 
-			$this->cache->put($checksum, $cacheData, $this->cacheLifetime);
+			$this->provider->putToCache($checksum, $cacheData, $this->cacheLifetime);
 
 			$this->worker->show();
 			
@@ -103,11 +102,11 @@ class Image {
 
 	public function js($publicDir = '/public') {
 		
-		$jsFile = Config::get('image::js_path');
+		$jsFile = $this->provider->getJsPath();
 
 		// hacky hack hack
 		// if .js file doesn't exist in defined location then copy it there?! (or throw an error?)
-		if(!file_exists(base_path() . $jsFile)) {
+		if(!file_exists($this->provider->basePath() . $jsFile)) {
 			throw new \Exception('Javascript file does not exists! Please copy /vendor/imagecow/imagecow/Imagecow/Imagecow.js to ' . $jsFile);
 		}
 

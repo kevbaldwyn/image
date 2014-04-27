@@ -65,8 +65,9 @@ class ImageServiceProvider extends ServiceProvider {
 		$app = $this->app;
 
 		$this->app->bind('kevbaldwyn.image', function() use ($app) {
+			$provider = new \KevBaldwyn\Image\Providers\LaravelProvider($app['kevbaldwyn.image.cache']);
 			return new \KevBaldwyn\Image\Image($app['kevbaldwyn.image.worker'], 
-											   $app['kevbaldwyn.image.cache'],
+											   $provider,
 											   Config::get('image::cache.lifetime'),
 											   Config::get('image::route'));
 		});
