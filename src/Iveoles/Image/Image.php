@@ -45,7 +45,7 @@ class Image {
 		$this->pathString = $this->pathStringBase;
 		$this->pathString .= Config::get('image::vars.image') . '=' . $img;
 		$this->pathString .= '&' . Config::get('image::vars.transform') . '=' . $transform;
-		return $this;
+		return $this->pathString;
 	}
 
 
