@@ -3,6 +3,7 @@ A Laravel 4 wrapper for the Imagecow image resizing / respoisive image package. 
 
 Image cow can use either GD or ImageMagick to transform image.
 
+This is a customised fork from https://github.com/kevbaldwyn/image
 
 ## Instalation
 Install as any other Laravel 4 package:
@@ -11,7 +12,7 @@ Install as any other Laravel 4 package:
 
     "require": {
         ...
-        "kevbaldwyn/image":"dev-master"
+        "iveoles/image":"dev-master"
         ...
     }
 
@@ -25,7 +26,7 @@ Install as any other Laravel 4 package:
 
 	    ...
 
-	    'KevBaldwyn\Image\ImageServiceProvider'
+	    'Iveoles\Image\ImageServiceProvider'
 	)
 
 4) Add to the facades array in app.php:
@@ -34,12 +35,12 @@ Install as any other Laravel 4 package:
 
 	    ...
 
-	    'Image' => 'KevBaldwyn\Image\Facades\Image'
+	    'Image' => 'Iveoles\Image\Facades\Image'
 	)
 
 5) Publish the package config file to change the defaults:
 
-    $ php artisan config:publish kevbaldwyn/image
+    $ php artisan config:publish iveoles/image
 
 6) Copy the /vendor/imagecow/imagecow/Imagecow/Imagecow.js file to a publicly accessible web directory. The default path is set as /public/js/Imagecow.js, but whatever it is set as in the config the file must exist.
 
