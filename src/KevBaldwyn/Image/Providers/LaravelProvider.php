@@ -32,6 +32,11 @@ class LaravelProvider implements ProviderInterface {
 		return Config::get('image::js_path');
 	}
 
+	public function getWorkerName()
+	{
+		return Config::get('image::worker');
+	}
+
 	public function basePath()
 	{
 		return base_path();

@@ -12,6 +12,8 @@ interface ProviderInterface {
 
 	public function getJsPath();
 
+	public function getWorkerName();
+
 	public function basePath();
 
 	public function publicPath();

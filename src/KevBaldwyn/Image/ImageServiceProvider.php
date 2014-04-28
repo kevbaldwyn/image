@@ -27,20 +27,10 @@ class ImageServiceProvider extends ServiceProvider {
 		
 		Config::package('kevbaldwyn/image', __DIR__.'/../../config');
 
-		$this->registerWorker();
 		$this->registerCache();
 		$this->registerImage();
 
 		$this->registerCommands();
-
-	}
-
-
-	private function registerWorker() {
-
-		$this->app->bind('kevbaldwyn.image.worker', function() {
-			return \Imagecow\Image::create(Config::get('image::worker'));
-		});
 
 	}
 
@@ -66,8 +56,7 @@ class ImageServiceProvider extends ServiceProvider {
 
 		$this->app->bind('kevbaldwyn.image', function() use ($app) {
 			$provider = new \KevBaldwyn\Image\Providers\LaravelProvider($app['kevbaldwyn.image.cache']);
-			return new \KevBaldwyn\Image\Image($app['kevbaldwyn.image.worker'], 
-											   $provider,
+			return new \KevBaldwyn\Image\Image($provider,
 											   Config::get('image::cache.lifetime'),
 											   Config::get('image::route'));
 		});

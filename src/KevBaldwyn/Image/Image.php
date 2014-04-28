@@ -1,6 +1,7 @@
 <?php namespace KevBaldwyn\Image;
 
 use KevBaldwyn\Image\Providers\ProviderInterface;
+use Imagecow\Image as ImageCow;
 
 class Image {
 
@@ -12,10 +13,9 @@ class Image {
 	private $pathString;
 
 
-	public function __construct($worker, ProviderInterface $provider, $cacheLifetime, $pathString) {
-		$this->worker = $worker;
-		$this->provider = $provider;
-		$this->cacheLifetime = $cacheLifetime;
+	public function __construct(ProviderInterface $provider, $cacheLifetime, $pathString) {
+		$this->provider       = $provider;
+		$this->cacheLifetime  = $cacheLifetime;
 		$this->pathStringBase = $pathString . '?';
 	}
 
@@ -57,8 +57,9 @@ class Image {
 
 
 	public function serve() {
+
 		if($this->provider->getQueryStringData($this->provider->getVarResponsiveFlag()) == 'true') {
-			$operations = $this->worker->getResponsiveOperations($_COOKIE['Imagecow_detection'], $this->provider->getQueryStringData($this->provider->getVarTransform()));
+			$operations = Imagecow::getResponsiveOperations($_COOKIE['Imagecow_detection'], $this->provider->getQueryStringData($this->provider->getVarTransform()));
 		}else{
 			$operations = $this->provider->getQueryStringData($this->provider->getVarTransform());
 		}
@@ -81,20 +82,15 @@ class Image {
 			}
 
 		}else{
-
-			$this->worker->load($imgPath)
-						 ->transform($operations);
+			$this->worker = Imagecow::create($this->provider->getWorkerName(), $imgPath);
+			$this->worker->transform($operations);
 			
 			$cacheData = array('mime' => $this->worker->getMimeType(),
 							   'data' => $this->worker->getString());
 
 			$this->provider->putToCache($checksum, $cacheData, $this->cacheLifetime);
 
-			$this->worker->show();
-			
-			// if the script didn't die then it will have an error (Imagecow::show() dies when it returns image data)
-			throw new \Exception($this->worker->getError()->getMessage());
-			
+			$this->worker->show();			
 		}	
 		
 	}
