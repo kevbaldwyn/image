@@ -1,11 +1,10 @@
-<?php namespace KevBaldwyn\Image;
+<?php namespace Iveoles\Image;
 
 use Config;
 use Input;
 
 class Image {
 
-	private $worker;
 	private $cache;
 	private $cacheLifetime; // minutes
 
@@ -13,18 +12,11 @@ class Image {
 	private $pathString;
 
 
-	public function __construct($worker, \Illuminate\Cache\CacheManager $cache, $cacheLifetime, $pathString) {
-		$this->worker = $worker;
+	public function __construct(\Illuminate\Cache\CacheManager $cache, $cacheLifetime, $pathString) {
 		$this->cache = $cache;
 		$this->cacheLifetime = $cacheLifetime;
 		$this->pathStringBase = $pathString . '?';
 	}
-
-
-	public function getWorker() {
-		return $this->worker;
-	}
-
 
 	public function responsive(/* any number of params */) {
 		$params = func_get_args();
@@ -53,20 +45,15 @@ class Image {
 		$this->pathString = $this->pathStringBase;
 		$this->pathString .= Config::get('image::vars.image') . '=' . $img;
 		$this->pathString .= '&' . Config::get('image::vars.transform') . '=' . $transform;
-		return $this;
+		return $this->pathString;
 	}
 
 
 	public function serve() {
-		if(Input::get(Config::get('image::vars.responsive_flag')) == 'true') {
-			$operations = $this->worker->getResponsiveOperations($_COOKIE['Imagecow_detection'], Input::get(Config::get('image::vars.transform')));
-		}else{
-			$operations = Input::get(Config::get('image::vars.transform'));
-		}
 
-		// is there ant merit in this being base_path()?
-		// if it was base_path() then any image on the filesystem could be served - is this actually desirable?
 		$imgPath = public_path() . Input::get(Config::get('image::vars.image'));
+
+		$operations = Input::get(Config::get('image::vars.transform'));
 		
 		$checksum  = md5($imgPath . ';' . serialize($operations));
 		$cacheData = $this->cache->get($checksum);
@@ -83,18 +70,18 @@ class Image {
 
 		}else{
 
-			$this->worker->load($imgPath)
-						 ->transform($operations);
+			$image = \Imagecow\Image::create($imgPath, Config::get('image::worker'));
+			$image->transform($operations);
 			
-			$cacheData = array('mime' => $this->worker->getMimeType(),
-							   'data' => $this->worker->getString());
+			$cacheData = array('mime' => $image->getMimeType(),
+							   'data' => $image->getString());
 
 			$this->cache->put($checksum, $cacheData, $this->cacheLifetime);
 
-			$this->worker->show();
+			$image->show();
 			
 			// if the script didn't die then it will have an error (Imagecow::show() dies when it returns image data)
-			throw new \Exception($this->worker->getError()->getMessage());
+			throw new \Exception($image->getError()->getMessage());
 			
 		}	
 		
