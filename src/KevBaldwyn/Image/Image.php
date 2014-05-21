@@ -2,6 +2,7 @@
 
 use KevBaldwyn\Image\Providers\ProviderInterface;
 use Imagecow\Image as ImageCow;
+use Closure;
 
 class Image {
 
@@ -12,12 +13,15 @@ class Image {
 	private $pathStringbase = '';
 	private $pathString;
 
-	const EVENT_ON_CREATED = 'kevbaldwyn.image.created';
+	private $callbacks = array();
 
-	public function __construct(ProviderInterface $provider, $cacheLifetime, $pathString) {
+	const EVENT_ON_CREATED = 'kevbaldwyn.image.created';
+	const CALLBACK_MODIFY_PATH = 'callback.modifyBasePath';
+
+	public function __construct(ProviderInterface $provider, $cacheLifetime, $serveRoute) {
 		$this->provider       = $provider;
 		$this->cacheLifetime  = $cacheLifetime;
-		$this->pathStringBase = $pathString . '?';
+		$this->pathStringBase = $serveRoute;
 	}
 
 
@@ -40,6 +44,16 @@ class Image {
 	}
 
 
+	public function getBasePath()
+	{
+		$basePath = $this->pathStringBase;
+		foreach($this->callbacks[self::CALLBACK_MODIFY_PATH] as $callback) {
+			$basePath = $callback($basePath);
+		}
+		return $basePath . '?';
+	}
+
+
 	public function path(/* any number of params */) {
 		
 		$params = func_get_args();
@@ -50,7 +64,7 @@ class Image {
 		list($img, $transform) = $this->getPathOptions($params);
 
 		// write out the resize path
-		$this->pathString = $this->pathStringBase;
+		$this->pathString = $this->getBasePath();
 		$this->pathString .= $this->provider->getVarImage() . '=' . $img;
 		$this->pathString .= '&' . $this->provider->getVarTransform() . '=' . $transform;
 		return $this;
@@ -96,6 +110,12 @@ class Image {
 			$this->worker->show();			
 		}	
 		
+	}
+
+
+	public function addCallback($type, Closure $callback)
+	{
+		$this->callbacks[$type][] = $callback;
 	}
 
 

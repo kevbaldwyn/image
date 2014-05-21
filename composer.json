@@ -12,6 +12,9 @@
         "php": ">=5.3.0",
         "imagecow/imagecow": "1.*"
     },
+    "require-dev" : {
+        "mockery/mockery":"dev-master"
+    },
     "suggest": {
         "illuminate/support" : "If using this package with Laravel > 4, you will need to install Illuminate Support. If Laravel is already installed this will already be available."
     },
@@ -19,14 +22,6 @@
         "psr-0": {
             "KevBaldwyn\\Image": "src/"
         }
-    },
-    "scripts": {
-        "post-install-cmd": [
-            "php artisan kevbaldwyn:image:moveasset"
-        ],
-        "post-update-cmd": [
-            "php artisan kevbaldwyn:image:moveasset"
-        ]
     },
     "minimum-stability": "dev"
 }
