@@ -13,7 +13,7 @@
         "imagecow/imagecow": "1.*"
     },
     "suggest": {
-        "illuminate/support" : "If using this package with Laravel > 4, you will need to install Illuminate Support. If Laravel is already installed this will already be available.",
+        "illuminate/support" : "If using this package with Laravel > 4, you will need to install Illuminate Support. If Laravel is already installed this will already be available."
     },
     "autoload": {
         "psr-0": {
