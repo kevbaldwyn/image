@@ -12,6 +12,7 @@ class Image {
 	private $pathStringbase = '';
 	private $pathString;
 
+	const EVENT_ON_CREATED = 'kevbaldwyn.image.created';
 
 	public function __construct(ProviderInterface $provider, $cacheLifetime, $pathString) {
 		$this->provider       = $provider;
@@ -89,6 +90,8 @@ class Image {
 							   'data' => $this->worker->getString());
 
 			$this->provider->putToCache($checksum, $cacheData, $this->cacheLifetime);
+
+			$this->provider->fireEvent(self::EVENT_ON_CREATED, array($worker, $imgPath));
 
 			$this->worker->show();			
 		}	

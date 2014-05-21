@@ -21,4 +21,6 @@ interface ProviderInterface {
 	public function getFromCache($checksum);
 
 	public function putToCache($checksum, $cacheData, $cacheLifetime);
+
+	public function fireEvent($name, array $args);
 }

@@ -57,4 +57,15 @@ class LaravelProvider implements ProviderInterface {
 		$this->cache->put($checksum, $cacheData, $cacheLifetime);
 	}
 
+	/**
+	 * a simple wrapper for firing a laravel event
+	 * @param  string $name event name
+	 * @param  array  $args args
+	 * @return void
+	 */
+	public function fireEvent($name, array $args)
+	{
+		Event::fire($name, $args);
+	}
+
 }
