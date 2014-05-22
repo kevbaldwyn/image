@@ -67,6 +67,18 @@ class ImageTest extends \PHPUnit_Framework_TestCase {
 	}
 
 
+	public function testResponsivePathOptions()
+	{
+		$image = new Image(static::mockProvider(), 100, '/image-server');
+		$this->assertSame(
+			'/image-server?img=/path/to/image.jpg&transform=resizeCrop,800,600;max-width=400:resize,400&responsive=true', 
+			$image->path('/path/to/image.jpg', 'resizeCrop', 800, 600)
+				->responsive('max-width=400', 'resize', '400')
+				->__toString()
+		);
+	}
+
+
 	public static function mockProvider()
 	{
 		$provider = m::mock('\KevBaldwyn\Image\Providers\ProviderInterface');
