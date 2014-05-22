@@ -47,8 +47,10 @@ class Image {
 	public function getBasePath()
 	{
 		$basePath = $this->pathStringBase;
-		foreach($this->callbacks[self::CALLBACK_MODIFY_PATH] as $callback) {
-			$basePath = $callback($basePath);
+		if(array_key_exists(self::CALLBACK_MODIFY_PATH, $this->callbacks)) {
+			foreach($this->callbacks[self::CALLBACK_MODIFY_PATH] as $callback) {
+				$basePath = $callback($basePath);
+			}
 		}
 		return $basePath . '?';
 	}
