@@ -1,12 +1,13 @@
 <?php namespace KevBaldwyn\Image;
 
 use KevBaldwyn\Image\Providers\ProviderInterface;
+use KevBaldwyn\Image\Servers\Cache as CacheServer;
+use KevBaldwyn\Image\Servers\ImageCow as ImageCowServer;
 use Imagecow\Image as ImageCow;
 use Closure;
 
 class Image {
 
-	private $worker;
 	private $provider;
 	private $cacheLifetime; // minutes
 
@@ -15,6 +16,8 @@ class Image {
 
 	private $callbacks = array();
 
+	private $server;
+
 	const EVENT_ON_CREATED = 'kevbaldwyn.image.created';
 	const CALLBACK_MODIFY_IMG_PATH = 'callback.modifyImgPath';
 
@@ -22,11 +25,6 @@ class Image {
 		$this->provider       = $provider;
 		$this->cacheLifetime  = $cacheLifetime;
 		$this->pathStringBase = $serveRoute;
-	}
-
-
-	public function getWorker() {
-		return $this->worker;
 	}
 
 
@@ -80,45 +78,63 @@ class Image {
 	}
 
 
+	public function getImageData()
+	{
+		$server = $this->getServer();
+		return $server->getImageData();
+	}
+
+
+	public function isFromCache()
+	{
+		return $this->getServer()->isFromCache();
+	}
+
+
 	public function serve() {
 
-		if($this->provider->getQueryStringData($this->provider->getVarResponsiveFlag()) == 'true') {
-			$operations = Imagecow::getResponsiveOperations($_COOKIE['Imagecow_detection'], $this->provider->getQueryStringData($this->provider->getVarTransform()));
-		}else{
-			$operations = $this->provider->getQueryStringData($this->provider->getVarTransform());
-		}
-		
-		// change way we deal with location of image / it's path
-		// have callback for modifying image location
-		$imgPath   = $this->getImagePath();
+		$server = $this->getServer();
 
-		$checksum  = md5($imgPath . ';' . serialize($operations));
-		$cacheData = $this->provider->getFromCache($checksum);
-		
-		if($cacheData) {
+		if(!$server->isFromCache()) {
+			$server->create();
 
-			// using cache
-			if (($string = $cacheData['data']) && ($mimetype = $cacheData['mime'])) {
-				header('Content-Type: '.$mimetype);
-				die($string);
-			}else{
-				throw new \Exception('There was an error with the image cache');
-			}
-
-		}else{
-			$this->worker = Imagecow::create($this->provider->getWorkerName(), $imgPath);
-			$this->worker->transform($operations);
-			
-			$cacheData = array('mime' => $this->worker->getMimeType(),
-							   'data' => $this->worker->getString());
-
-			$this->provider->putToCache($checksum, $cacheData, $this->cacheLifetime);
-
-			$this->provider->fireEvent(self::EVENT_ON_CREATED, array($worker, $imgPath));
-
-			$this->worker->show();			
+			//$this->provider->fireEvent(self::EVENT_ON_CREATED, array($imgPath, $server->getWorker(), $this->getOperations()));
 		}	
+
+		$server->serve();
 		
+	}
+
+
+	private function getServer()
+	{
+		if(is_null($this->server)) {
+			// get the tarnsformations
+			$operations = $this->getOperations();
+			
+			// get the image path
+			$imgPath   = $this->getImagePath();
+
+			// check cache
+			$checksum  = md5($imgPath . ';' . serialize($operations));
+			$cacheData = $this->provider->getFromCache($checksum);
+			
+			// get the correctly instantiated server object
+			if($cacheData) {
+				$this->server = new CacheServer($cacheData);
+			}else{
+				$worker = Imagecow::create($imgPath, $this->provider->getWorkerName());
+				$this->server = new ImageCowServer(
+					$worker, 
+					$operations,
+					$this->provider, 
+					$this->cacheLifetime,
+					$checksum
+				);
+			}
+		}
+
+		return $this->server;
 	}
 
 
@@ -160,6 +176,17 @@ class Image {
 
 	public function __toString() {
 		return $this->pathString;
+	}
+
+
+	private function getOperations()
+	{
+		if($this->provider->getQueryStringData($this->provider->getVarResponsiveFlag()) == 'true') {
+			$operations = Imagecow::getResponsiveOperations($_COOKIE['Imagecow_detection'], $this->provider->getQueryStringData($this->provider->getVarTransform()));
+		}else{
+			$operations = $this->provider->getQueryStringData($this->provider->getVarTransform());
+		}
+		return $operations;
 	}
 
 
