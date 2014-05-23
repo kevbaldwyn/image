@@ -6,17 +6,17 @@ use \Mockery as m;
 
 class ImageTest extends \PHPUnit_Framework_TestCase {
 
-	public function testCallBacksModifyBasePath()
+	public function testCallBacksModifyImagePath()
 	{
 		$image = new Image(static::mockProvider(), 100, '/image-server');
-		$image->addCallback(Image::CALLBACK_MODIFY_PATH, function($path) {
+		$image->addCallback(Image::CALLBACK_MODIFY_IMG_PATH, function($path) {
 			return '/prepend' . $path;
 		});
-		$image->addCallback(Image::CALLBACK_MODIFY_PATH, function($path) {
+		$image->addCallback(Image::CALLBACK_MODIFY_IMG_PATH, function($path) {
 			return $path . '/append';
 		});
 
-		$this->assertSame('/prepend/image-server/append?', $image->getBasePath());
+		$this->assertSame('/prepend/var/www/public/path/to/image.jpg/append', $image->getImagePath());
 	}
 
 
@@ -85,6 +85,8 @@ class ImageTest extends \PHPUnit_Framework_TestCase {
 		$provider->shouldReceive('getVarImage')->andReturn('img');
 		$provider->shouldReceive('getVarTransform')->andReturn('transform');
 		$provider->shouldReceive('getVarResponsiveFlag')->andReturn('responsive');
+		$provider->shouldReceive('getQueryStringData')->with('img')->andReturn('/path/to/image.jpg');
+		$provider->shouldReceive('publicPath')->andReturn('/var/www/public');
 
 		return $provider;
 	}

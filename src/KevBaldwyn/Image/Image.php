@@ -16,7 +16,7 @@ class Image {
 	private $callbacks = array();
 
 	const EVENT_ON_CREATED = 'kevbaldwyn.image.created';
-	const CALLBACK_MODIFY_PATH = 'callback.modifyBasePath';
+	const CALLBACK_MODIFY_IMG_PATH = 'callback.modifyImgPath';
 
 	public function __construct(ProviderInterface $provider, $cacheLifetime, $serveRoute) {
 		$this->provider       = $provider;
@@ -47,12 +47,19 @@ class Image {
 	public function getBasePath()
 	{
 		$basePath = $this->pathStringBase;
-		if(array_key_exists(self::CALLBACK_MODIFY_PATH, $this->callbacks)) {
-			foreach($this->callbacks[self::CALLBACK_MODIFY_PATH] as $callback) {
-				$basePath = $callback($basePath);
+		return $basePath . '?';
+	}
+
+
+	public function getImagePath()
+	{
+		$imgPath = $this->provider->publicPath() . $this->provider->getQueryStringData($this->provider->getVarImage());
+		if(array_key_exists(self::CALLBACK_MODIFY_IMG_PATH, $this->callbacks)) {
+			foreach($this->callbacks[self::CALLBACK_MODIFY_IMG_PATH] as $callback) {
+				$imgPath = $callback($imgPath);
 			}
 		}
-		return $basePath . '?';
+		return $imgPath;
 	}
 
 
@@ -80,11 +87,11 @@ class Image {
 		}else{
 			$operations = $this->provider->getQueryStringData($this->provider->getVarTransform());
 		}
-
-		// is there ant merit in this being $this->provider->basePath()?
-		// if it was $this->provider->basePath() then any image on the filesystem could be served - is this actually desirable?
-		$imgPath = $this->provider->publicPath() . $this->provider->getQueryStringData($this->provider->getVarImage());
 		
+		// change way we deal with location of image / it's path
+		// have callback for modifying image location
+		$imgPath   = $this->getImagePath();
+
 		$checksum  = md5($imgPath . ';' . serialize($operations));
 		$cacheData = $this->provider->getFromCache($checksum);
 		
