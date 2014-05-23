@@ -1,11 +1,12 @@
-<?php namespace KevBaldwyn\Image\Providers;
+<?php namespace KevBaldwyn\Image\Providers\Laravel;
 
+use KevBaldwyn\Image\Providers\ProviderInterface;
 use Config;
 use Illuminate\Cache\CacheManager;
 use Event;
 use Input;
 
-class LaravelProvider implements ProviderInterface {
+class Provider implements ProviderInterface {
 
 	private $cache;
 

@@ -1,4 +1,4 @@
-<?php namespace KevBaldwyn\Image\Facades;
+<?php namespace KevBaldwyn\Image\Providers\Laravel\Facades;
 
 use Illuminate\Support\Facades\Facade;
 

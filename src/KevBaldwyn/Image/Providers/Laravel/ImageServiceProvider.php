@@ -1,7 +1,10 @@
-<?php namespace KevBaldwyn\Image;
+<?php namespace KevBaldwyn\Image\Providers\Laravel;
 
 use Config;
 use Illuminate\Support\ServiceProvider;
+use KevBaldwyn\Image\Providers\Laravel\Provider as LaravelProvider;
+use KevBaldwyn\Image\Image;
+use KevBaldwyn\Image\Providers\Laravel\Commands\MoveAssetCommand;
 
 class ImageServiceProvider extends ServiceProvider {
 
@@ -25,7 +28,7 @@ class ImageServiceProvider extends ServiceProvider {
 	public function register()
 	{
 		
-		Config::package('kevbaldwyn/image', __DIR__.'/../../config');
+		Config::package('kevbaldwyn/image', __DIR__.'/../../../../../config');
 
 		$this->registerCache();
 		$this->registerImage();
@@ -55,10 +58,10 @@ class ImageServiceProvider extends ServiceProvider {
 		$app = $this->app;
 
 		$this->app->bind('kevbaldwyn.image', function() use ($app) {
-			$provider = new \KevBaldwyn\Image\Providers\LaravelProvider($app['kevbaldwyn.image.cache']);
-			return new \KevBaldwyn\Image\Image($provider,
-											   Config::get('image::cache.lifetime'),
-											   Config::get('image::route'));
+			$provider = new LaravelProvider($app['kevbaldwyn.image.cache']);
+			return new Image($provider,
+							 Config::get('image::cache.lifetime'),
+							 Config::get('image::route'));
 		});
 
 	}
@@ -67,7 +70,7 @@ class ImageServiceProvider extends ServiceProvider {
 	private function registerCommands() {
 
 		$this->app['command.kevbaldwyn.image.moveasset'] = $this->app->share(function($app) {
-			return new Commands\MoveAssetCommand();
+			return new MoveAssetCommand();
 		});
 				
 		$this->commands('command.kevbaldwyn.image.moveasset');

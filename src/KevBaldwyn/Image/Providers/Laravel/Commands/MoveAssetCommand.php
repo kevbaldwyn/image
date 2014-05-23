@@ -1,4 +1,4 @@
-<?php namespace KevBaldwyn\Image\Commands;
+<?php namespace KevBaldwyn\Image\Providers\Laravel\Commands;
 
 use Config;
 use Illuminate\Console\Command;
