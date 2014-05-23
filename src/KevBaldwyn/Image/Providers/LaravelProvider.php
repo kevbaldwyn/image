@@ -2,6 +2,8 @@
 
 use Config;
 use Illuminate\Cache\CacheManager;
+use Event;
+use Input;
 
 class LaravelProvider implements ProviderInterface {
 
@@ -25,6 +27,11 @@ class LaravelProvider implements ProviderInterface {
 	public function getVarTransform()
 	{
 		return Config::get('image::vars.transform');
+	}
+
+	public function getQueryStringData($key)
+	{
+		return Input::get($key);
 	}
 
 	public function getJsPath()
