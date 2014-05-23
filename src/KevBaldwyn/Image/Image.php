@@ -121,7 +121,7 @@ class Image {
 		if(!$server->isFromCache()) {
 			$server->create();
 
-			//$this->provider->fireEvent(self::EVENT_ON_CREATED, array($imgPath, $server->getWorker(), $this->getOperations()));
+			$this->provider->fireEvent(self::EVENT_ON_CREATED, array($this->getImagePath(), $server->getWorker(), $this->getOperations()));
 		}	
 
 		$server->serve();
