@@ -18,8 +18,12 @@ class Image {
 
 	private $server;
 
+	/**
+	 * some constants for strings used internally
+	 */
 	const EVENT_ON_CREATED = 'kevbaldwyn.image.created';
 	const CALLBACK_MODIFY_IMG_PATH = 'callback.modifyImgPath';
+
 
 	public function __construct(ProviderInterface $provider, $cacheLifetime, $serveRoute) {
 		$this->provider       = $provider;
@@ -28,6 +32,11 @@ class Image {
 	}
 
 
+	/**
+	 * build the responsive image part of the url
+	 * any number of parameters can be sent
+	 * @return static $this
+	 */
 	public function responsive(/* any number of params */) {
 		$params = func_get_args();
 		if(count($params) <= 1) {
@@ -42,13 +51,11 @@ class Image {
 	}
 
 
-	public function getBasePath()
-	{
-		$basePath = $this->pathStringBase;
-		return $basePath . '?';
-	}
-
-
+	/**
+	 * get the path to the image
+	 * callbacks can be applied to modify the path
+	 * @return string path to the image to be used
+	 */
 	public function getImagePath()
 	{
 		$imgPath = $this->provider->publicPath() . $this->provider->getQueryStringData($this->provider->getVarImage());
@@ -61,6 +68,10 @@ class Image {
 	}
 
 
+	/**
+	 * build the initial transformed path for the image
+	 * @return static $this
+	 */
 	public function path(/* any number of params */) {
 		
 		$params = func_get_args();
@@ -78,6 +89,10 @@ class Image {
 	}
 
 
+	/**
+	 * get the data for the image
+	 * @return array ['mime' => string, 'data' => string]
+	 */
 	public function getImageData()
 	{
 		$server = $this->getServer();
@@ -85,12 +100,20 @@ class Image {
 	}
 
 
+	/**
+	 * check if we are serving from the cache
+	 * @return boolean
+	 */
 	public function isFromCache()
 	{
 		return $this->getServer()->isFromCache();
 	}
 
 
+	/**
+	 * serve and output the new image
+	 * @return image data and headers
+	 */
 	public function serve() {
 
 		$server = $this->getServer();
@@ -106,6 +129,11 @@ class Image {
 	}
 
 
+	/**
+	 * get the correctly instaniated server image in play
+	 * takes into account cache and configured options
+	 * @return KevBaldwyn\Image\Servers\ServerInterface
+	 */
 	private function getServer()
 	{
 		if(is_null($this->server)) {
@@ -138,12 +166,22 @@ class Image {
 	}
 
 
+	/**
+	 * add a callback
+	 * @param string  $type     the type of callback to be added
+	 * @param Closure $callback the callback
+	 */
 	public function addCallback($type, Closure $callback)
 	{
 		$this->callbacks[$type][] = $callback;
 	}
 
 
+	/**
+	 * output the javascript file to be used by the ImageCow responsive functionality
+	 * @param  string $publicDir the path the file sits under
+	 * @return string            the javascript
+	 */
 	public function js($publicDir = '/public') {
 		
 		$jsFile = $this->provider->getJsPath();
@@ -174,11 +212,30 @@ class Image {
 	}
 
 
+	/**
+	 * returns the path to the image
+	 * @return string
+	 */
 	public function __toString() {
 		return $this->pathString;
 	}
 
 
+	/**
+	 * get the base path for the image server
+	 * @return string 
+	 */
+	private function getBasePath()
+	{
+		$basePath = $this->pathStringBase;
+		return $basePath . '?';
+	}
+
+
+	/**
+	 * get the options passed to the instance for performing the transformation
+	 * @return array
+	 */
 	private function getOperations()
 	{
 		if($this->provider->getQueryStringData($this->provider->getVarResponsiveFlag()) == 'true') {
@@ -190,6 +247,11 @@ class Image {
 	}
 
 
+	/**
+	 * build the path options for the server path string
+	 * @param  array $params the transform options
+	 * @return array         
+	 */
 	private function getPathOptions($params) {
 
 		$first = $params[0];
