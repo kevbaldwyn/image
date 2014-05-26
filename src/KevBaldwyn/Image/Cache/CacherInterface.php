@@ -10,5 +10,5 @@ interface CacherInterface {
 
 	public function serve();
 
-	public function put();
+	public function put($data);
 }
