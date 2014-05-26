@@ -21,6 +21,13 @@ class FileSystem implements SaveHandlerInterface {
 	}
 
 
+	public function exists($filename)
+	{
+		$filePath = $this->basePath . $this->getPublicPath() . $filename;
+		return file_exists($filePath);
+	}
+
+
 	public function save($filename, array $data)
 	{
 		$path = $this->basePath . $this->dir;
