@@ -31,6 +31,7 @@ class ImageServiceProvider extends ServiceProvider {
 		Config::package('kevbaldwyn/image', __DIR__.'/../../../../../config');
 
 		$this->registerCache();
+		$this->registerImageFileSaveHandler();
 		$this->registerImage();
 
 		$this->registerCommands();
@@ -53,15 +54,30 @@ class ImageServiceProvider extends ServiceProvider {
 	}
 
 
+	private function registerImageFileSaveHandler()
+	{
+		$app = $this->app;
+		$this->app->bind('kevbaldwyn.image.saveHandler', function() use ($app) {
+			//return new S3Handler();
+			return new FileSystem($provider, '');
+		});
+	}
+
+
 	private function registerImage() {
 
 		$app = $this->app;
 
 		$this->app->bind('kevbaldwyn.image', function() use ($app) {
 			$provider = new LaravelProvider($app['kevbaldwyn.image.cache']);
+			// option 1
+			$cacher   = new ProviderCacher($provider);
+			// option 2
+			// $cacher   = new ImageFileCacher($app['kevbaldwyn.image.saveHandler']);
 			return new Image($provider,
 							 Config::get('image::cache.lifetime'),
-							 Config::get('image::route'));
+							 Config::get('image::route'),
+							 $cacher);
 		});
 
 	}
