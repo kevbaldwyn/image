@@ -1,5 +1,7 @@
 <?php namespace KevBaldwyn\Image\Servers;
 
+use KevBaldwyn\Image\Cache\CacherInterface;
+
 /**
  * ImageCow Server
  * provides implementation for getting image data from image cow
@@ -8,19 +10,15 @@ class ImageCow implements ServerInterface {
 
 	private $worker;
 	private $operations;
-	private $provider;
-	private $cacheLifetime;
-	private $checksum;
-	private $cacheData;
+	private $cacher;
+	private $data;
 
 
-	public function __construct($worker, $operations, $provider, $cacheLifetime, $checksum)
+	public function __construct($worker, $operations, CacherInterface $cacher)
 	{
 		$this->worker        = $worker;
 		$this->operations    = $operations;
-		$this->provider      = $provider;
-		$this->cacheLifetime = $cacheLifetime;
-		$this->checksum      = $checksum;
+		$this->cacher        = $cacher;
 	}
 
 
@@ -42,10 +40,10 @@ class ImageCow implements ServerInterface {
 	{
 		$this->worker->transform($this->operations);
 			
-		$this->cacheData = array('mime' => $this->worker->getMimeType(),
-						   		 'data' => $this->worker->getString());
+		$this->data = array('mime' => $this->worker->getMimeType(),
+						   	'data' => $this->worker->getString());
 
-		$this->provider->putToCache($this->checksum, $this->cacheData, $this->cacheLifetime);
+		$this->cacher->put($this->data);
 	}
 
 
@@ -66,7 +64,7 @@ class ImageCow implements ServerInterface {
 	public function getImageData()
 	{
 		$this->create();
-		return $this->cacheData;
+		return $this->data;
 	}
 
 

@@ -2,6 +2,7 @@
 
 use KevBaldwyn\Image\Providers\ProviderInterface;
 use KevBaldwyn\Image\Servers\Cache as CacheServer;
+use KevBaldwyn\Image\Cache\CacherInterface;
 use KevBaldwyn\Image\Servers\ImageCow as ImageCowServer;
 use Imagecow\Image as ImageCow;
 use Closure;
@@ -9,6 +10,7 @@ use Closure;
 class Image {
 
 	private $provider;
+	private $cacher;
 	private $cacheLifetime; // minutes
 
 	private $pathStringbase = '';
@@ -25,8 +27,9 @@ class Image {
 	const CALLBACK_MODIFY_IMG_PATH = 'callback.modifyImgPath';
 
 
-	public function __construct(ProviderInterface $provider, $cacheLifetime, $serveRoute) {
+	public function __construct(ProviderInterface $provider, $cacheLifetime, $serveRoute, CacherInterface $cacher) {
 		$this->provider       = $provider;
+		$this->cacher         = $cacher;
 		$this->cacheLifetime  = $cacheLifetime;
 		$this->pathStringBase = $serveRoute;
 	}
@@ -144,20 +147,17 @@ class Image {
 			$imgPath   = $this->getImagePath();
 
 			// check cache
-			$checksum  = md5($imgPath . ';' . serialize($operations));
-			$cacheData = $this->provider->getFromCache($checksum);
-			
+			$this->cacher->init($imgPath, $operations, $this->cacheLifetime);
+
 			// get the correctly instantiated server object
-			if($cacheData) {
-				$this->server = new CacheServer($cacheData);
+			if($this->cacher->exists()) {
+				$this->server = new CacheServer($this->cacher);
 			}else{
 				$worker = Imagecow::create($imgPath, $this->provider->getWorkerName());
 				$this->server = new ImageCowServer(
 					$worker, 
 					$operations,
-					$this->provider, 
-					$this->cacheLifetime,
-					$checksum
+					$this->cacher
 				);
 			}
 		}

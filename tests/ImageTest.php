@@ -2,13 +2,14 @@
 
 use \KevBaldwyn\Image\Image;
 use \KevBaldwyn\Image\Providers\ProviderInterface;
+use \KevBaldwyn\Image\Cache\CacherInterface;
 use \Mockery as m;
 
 class ImageTest extends \PHPUnit_Framework_TestCase {
 
 	public function testCallBacksModifyImagePath()
 	{
-		$image = new Image(static::mockProvider(), 100, '/image-server');
+		$image = new Image(static::mockProvider(), 100, '/image-server', static::mockCacher());
 		$image->addCallback(Image::CALLBACK_MODIFY_IMG_PATH, function($path) {
 			return '/prepend' . $path;
 		});
@@ -22,7 +23,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase {
 
 	public function testPathOptions()
 	{
-		$image = new Image(static::mockProvider(), 100, '/image-server');
+		$image = new Image(static::mockProvider(), 100, '/image-server', static::mockCacher());
 		// resize
 		$this->assertSame(
 			'/image-server?img=/path/to/image.jpg&transform=resize,400,200', 
@@ -69,7 +70,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase {
 
 	public function testResponsivePathOptions()
 	{
-		$image = new Image(static::mockProvider(), 100, '/image-server');
+		$image = new Image(static::mockProvider(), 100, '/image-server', static::mockCacher());
 		$this->assertSame(
 			'/image-server?img=/path/to/image.jpg&transform=resizeCrop,800,600;max-width=400:resize,400&responsive=true', 
 			$image->path('/path/to/image.jpg', 'resizeCrop', 800, 600)
@@ -81,11 +82,11 @@ class ImageTest extends \PHPUnit_Framework_TestCase {
 
 	public function testCreateImage()
 	{
-		$provider = static::mockProvider();
-		$provider->shouldReceive('putToCache')->andReturn(true);
-		$provider->shouldReceive('getFromCache')->andReturn(false);
+		$cacher = static::mockCacher();
+		$cacher->shouldReceive('exists')->andReturn(false);
+		$cacher->shouldReceive('put');
 
-		$image = new Image($provider, 100, '/image-server');
+		$image = new Image(static::mockProvider(), 100, '/image-server', $cacher);
 		$data = $image->getImageData();
 
 		$this->assertSame('image/jpeg', $data['mime']);
@@ -95,20 +96,21 @@ class ImageTest extends \PHPUnit_Framework_TestCase {
 
 	public function testCreateImageFromCache()
 	{
-		$provider = static::mockProvider();
-		$provider->shouldReceive('getFromCache')->andReturn(array(
+		$cacher = static::mockCacher();
+		$cacher->shouldReceive('exists')->andReturn(true);
+		$cacher->shouldReceive('getImageData')->andReturn(array(
 			'data' => static::base64imageStr(), 
 			'mime' => 'image/jpeg'
 		));
 
-		$image = new Image($provider, 100, '/image-server');
+		$image = new Image(static::mockProvider(), 100, '/image-server', $cacher);
 		$data = $image->getImageData();
 
 		$this->assertTrue($image->isFromCache());
 		$this->assertSame('image/jpeg', $data['mime']);
 		$this->assertSame(static::base64imageStr(), $data['data']);
 	}
-
+	
 
 	public static function mockProvider()
 	{
@@ -123,6 +125,14 @@ class ImageTest extends \PHPUnit_Framework_TestCase {
 		$provider->shouldReceive('getWorkerName')->andReturn('Gd');
 
 		return $provider;
+	}
+
+
+	public static function mockCacher()
+	{
+		$cacher = m::mock('\KevBaldwyn\Image\Cache\CacherInterface');
+		$cacher->shouldReceive('init');
+		return $cacher;
 	}
 
 

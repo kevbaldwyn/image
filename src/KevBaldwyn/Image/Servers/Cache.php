@@ -1,17 +1,19 @@
 <?php namespace KevBaldwyn\Image\Servers;
 
+use KevBaldwyn\Image\Cache\CacherInterface;
+
 /**
  * Cache server
  * provides implementation for getting image data from the cache
  */
 class Cache implements ServerInterface {
 
-	private $cacheData;
+	private $cacher;
 
 
-	public function __construct(array $cacheData) 
+	public function __construct(CacherInterface $cacher) 
 	{
-		$this->cacheData = $cacheData;
+		$this->cacher = $cacher;
 	}
 
 
@@ -31,7 +33,7 @@ class Cache implements ServerInterface {
 	 */
 	public function getImageData()
 	{
-		return $this->cacheData;
+		return $this->cacher->getImageData();
 	}
 
 
@@ -41,12 +43,7 @@ class Cache implements ServerInterface {
 	 */
 	public function serve()
 	{
-		if (($string = $this->cacheData['data']) && ($mimetype = $this->cacheData['mime'])) {
-			header('Content-Type: '.$mimetype);
-			die($string);
-		}else{
-			throw new \Exception('There was an error with the image cache');
-		}
+		$this->cacher->serve();
 	}
 
 }
