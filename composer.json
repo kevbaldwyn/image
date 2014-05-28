@@ -10,7 +10,8 @@
     ],
     "require": {
         "php": ">=5.3.0",
-        "imagecow/imagecow": "1.*"
+        "imagecow/imagecow": "1.*",
+        "aws/aws-sdk-php": "2.x"
     },
     "require-dev" : {
         "mockery/mockery":"dev-master"
