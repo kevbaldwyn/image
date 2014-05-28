@@ -1,5 +1,6 @@
 <?php namespace KevBaldwyn\Image\SaveHandlers;
 
+use KevBaldwyn\Image\Image;
 use KevBaldwyn\Image\Providers\ProviderInterface;
 
 class FileSystem implements SaveHandlerInterface {
@@ -36,5 +37,7 @@ class FileSystem implements SaveHandlerInterface {
 		}
 		file_put_contents($path . $filename, $data['data']);
 	}
+
+	public function registerCallbacks(Image $image, ProviderInterface $provider) {}
 
 }

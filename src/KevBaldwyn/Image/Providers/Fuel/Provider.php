@@ -48,7 +48,7 @@ class Provider implements ProviderInterface {
 
 	public function basePath()
 	{
-		return APPPATH;
+		return DOCROOT . '/../';
 	}
 
 	public function publicPath()

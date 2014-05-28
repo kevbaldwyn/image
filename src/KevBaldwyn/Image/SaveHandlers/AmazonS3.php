@@ -3,6 +3,8 @@
 use Aws\S3\S3Client;
 use Aws\S3\Exception\S3Exception;
 use Guzzle\Http\EntityBody;
+use KevBaldwyn\Image\Image;
+use KevBaldwyn\Image\Providers\ProviderInterface;
 
 class AmazonS3 implements SaveHandlerInterface {
 
@@ -44,6 +46,14 @@ class AmazonS3 implements SaveHandlerInterface {
 		    'Body'   => EntityBody::factory($data['data']),
 		    'ContentType' => $data['mime']
 		));
+	}
+
+
+	public function registerCallbacks(Image $image, ProviderInterface $provider)
+	{
+		$image->addCallback(Image::CALLBACK_MODIFY_IMG_PATH, function($imgPath) use ($provider){
+			return str_replace($provider->publicPath(), '', $imgPath);
+		});
 	}
 
 }

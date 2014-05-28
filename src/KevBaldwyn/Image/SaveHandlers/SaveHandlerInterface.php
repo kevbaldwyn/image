@@ -1,5 +1,8 @@
 <?php namespace KevBaldwyn\Image\SaveHandlers;
 
+use KevBaldwyn\Image\Image;
+use KevBaldwyn\Image\Providers\ProviderInterface;
+
 interface SaveHandlerInterface {
 
 	public function getPublicPath();
@@ -7,5 +10,7 @@ interface SaveHandlerInterface {
 	public function exists($filename);
 
 	public function save($filename, array $data);
+
+	public function registerCallbacks(Image $image, ProviderInterface $provider);
 
 }

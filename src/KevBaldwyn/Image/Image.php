@@ -24,7 +24,8 @@ class Image {
 	 * some constants for strings used internally
 	 */
 	const EVENT_ON_CREATED = 'kevbaldwyn.image.created';
-	const CALLBACK_MODIFY_IMG_PATH = 'callback.modifyImgPath';
+	const CALLBACK_MODIFY_IMG_PATH     = 'callback.modifyImgPath';
+	const CALLBACK_MODIFY_IMG_SRC_PATH = 'callback.modifyImgSrcPath';
 
 
 	public function __construct(ProviderInterface $provider, $cacheLifetime, $serveRoute, CacherInterface $cacher) {
@@ -70,6 +71,18 @@ class Image {
 			}
 		}
 		return $imgPath;
+	}
+
+
+	public function getSrcPath()
+	{
+		$path = $this->getImagePath();
+		if(array_key_exists(self::CALLBACK_MODIFY_IMG_SRC_PATH, $this->callbacks)) {
+			foreach($this->callbacks[self::CALLBACK_MODIFY_IMG_SRC_PATH] as $callback) {
+				$path = $callback($path);
+			}
+		}
+		return $path;
 	}
 
 
@@ -144,18 +157,15 @@ class Image {
 		if(is_null($this->server)) {
 			// get the tarnsformations
 			$operations = $this->getOperations();
-			
-			// get the image path
-			$imgPath   = $this->getImagePath();
 
 			// check cache
-			$this->cacher->init($imgPath, $operations, $this->cacheLifetime);
+			$this->cacher->init($this->getImagePath(), $operations, $this->cacheLifetime);
 
 			// get the correctly instantiated server object
 			if($this->cacher->exists()) {
 				$this->server = new CacheServer($this->cacher);
 			}else{
-				$worker = Imagecow::create($imgPath, $this->provider->getWorkerName());
+				$worker = Imagecow::create($this->getSrcPath(), $this->provider->getWorkerName());
 				$this->server = new ImageCowServer(
 					$worker, 
 					$operations,
