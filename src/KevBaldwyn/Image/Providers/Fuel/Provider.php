@@ -77,4 +77,14 @@ class Provider implements ProviderInterface {
 		Event::trigger($name, $args);
 	}
 
+
+	/**
+	 * --- Fuel only methods
+	 */
+	
+	public function getRouteName()
+	{
+		return Arr::get($this->config, 'route');
+	}
+
 }

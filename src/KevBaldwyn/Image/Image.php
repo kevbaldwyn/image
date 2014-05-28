@@ -267,4 +267,10 @@ class Image {
 
 	}
 
+
+	public function getProvider()
+	{
+		return $this->provider;
+	}
+
 }
