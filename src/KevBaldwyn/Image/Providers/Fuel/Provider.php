@@ -18,17 +18,17 @@ class Provider implements ProviderInterface {
 
 	public function getVarResponsiveFlag()
 	{
-		return Arr::get('vars.responsive_flag', $this->config);
+		return Arr::get($this->config, 'vars.responsive_flag');
 	}
 
 	public function getVarImage()
 	{
-		return Arr::get('vars.image', $this->config);
+		return Arr::get($this->config, 'vars.image');
 	}
 
 	public function getVarTransform()
 	{
-		return Arr::get('vars.transform', $this->config);
+		return Arr::get($this->config, 'vars.transform');
 	}
 
 	public function getQueryStringData($key)
@@ -38,12 +38,12 @@ class Provider implements ProviderInterface {
 
 	public function getJsPath()
 	{
-		return Arr::get('js_path', $this->config);
+		return Arr::get($this->config, 'js_path');
 	}
 
 	public function getWorkerName()
 	{
-		return Arr::get('worker', $this->config);
+		return Arr::get($this->config, 'worker');
 	}
 
 	public function basePath()
