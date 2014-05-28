@@ -1,6 +1,7 @@
 <?php namespace KevBaldwyn\Image\Cache;
 
 use KevBaldwyn\Image\Providers\ProviderInterface;
+use KevBaldwyn\Image\Image;
 
 interface CacherInterface {
 
@@ -11,4 +12,6 @@ interface CacherInterface {
 	public function serve();
 
 	public function put($data);
+
+	public function register(Image $image);
 }

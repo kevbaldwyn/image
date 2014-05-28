@@ -1,6 +1,7 @@
 <?php namespace KevBaldwyn\Image\Cache;
 
 use KevBaldwyn\Image\SaveHandlers\SaveHandlerInterface;
+use KevBaldwyn\Image\Image;
 
 class ImageFileCacher implements CacherInterface {
 
@@ -21,6 +22,14 @@ class ImageFileCacher implements CacherInterface {
 		$this->imgPath       = $imgPath;
 		$this->operations    = $operations;
 		$this->cacheLifetime = $cacheLifetime;
+	}
+
+
+	public function register(Image $image)
+	{
+		$image->addCallback(Image::CALLBACK_MODIFY_IMG_PATH, function($imgPath) use ($provider){
+			return str_replace($provider->publicPath(), '', $imgPath);
+		});
 	}
 
 

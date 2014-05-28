@@ -32,6 +32,8 @@ class Image {
 		$this->cacher         = $cacher;
 		$this->cacheLifetime  = $cacheLifetime;
 		$this->pathStringBase = $serveRoute;
+
+		$cacher->register($this);
 	}
 
 

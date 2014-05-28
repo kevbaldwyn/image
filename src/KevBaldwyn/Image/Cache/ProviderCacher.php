@@ -1,6 +1,7 @@
 <?php namespace KevBaldwyn\Image\Cache;
 
 use KevBaldwyn\Image\Providers\ProviderInterface;
+use KevBaldwyn\Image\Image;
 
 class ProviderCacher implements CacherInterface {
 
@@ -14,6 +15,9 @@ class ProviderCacher implements CacherInterface {
 	{
 		$this->provider = $provider;
 	}
+
+
+	public function register(Image $image) {}
 
 
 	public function init($imgPath, $operations, $cacheLifetime)
