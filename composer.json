@@ -1,4 +1,10 @@
 {
+    "repositories": [
+        {
+            "type":"vcs",
+            "url":"https://github.com/kevbaldwyn/imageCow"
+        }
+    ],
     "name": "kevbaldwyn/image",
     "description": "A Laravel 4 package to aid generating automatically resized images on the fly and generating responsive images.",
     "keywords":["laravel", "laravel 4", "imagecow", "image", "responsive", "resize"],
@@ -10,7 +16,7 @@
     ],
     "require": {
         "php": ">=5.3.0",
-        "imagecow/imagecow": "1.*",
+        "kevbaldwyn/imagecow": "1.*",
         "aws/aws-sdk-php": "2.x"
     },
     "require-dev" : {
