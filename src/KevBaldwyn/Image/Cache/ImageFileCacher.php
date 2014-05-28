@@ -27,6 +27,7 @@ class ImageFileCacher implements CacherInterface {
 
 	public function register(Image $image)
 	{
+		$provider = $image->getProvider();
 		$image->addCallback(Image::CALLBACK_MODIFY_IMG_PATH, function($imgPath) use ($provider){
 			return str_replace($provider->publicPath(), '', $imgPath);
 		});
