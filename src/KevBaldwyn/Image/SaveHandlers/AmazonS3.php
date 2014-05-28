@@ -25,7 +25,7 @@ class AmazonS3 implements SaveHandlerInterface {
 
 	public function getPublicPath()
 	{
-		return 'https://' . $this->bucket . '.s3.amazonaws.com/' . $this->basePath;
+		return 'https://' . $this->bucket . '.s3.amazonaws.com/' . $this->basePath . '/';
 	}
 
 
