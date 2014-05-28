@@ -1,4 +1,4 @@
-<?php namespace KevBaldwyn\Image\Providers\Laravel;
+<?php namespace KevBaldwyn\Image\Providers\Fuel;
 
 use KevBaldwyn\Image\Providers\ProviderInterface;
 use Config;
