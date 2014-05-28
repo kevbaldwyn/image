@@ -51,8 +51,17 @@ class AmazonS3 implements SaveHandlerInterface {
 
 	public function registerCallbacks(Image $image, ProviderInterface $provider)
 	{
+		// remove public path (http:// part) from image path
 		$image->addCallback(Image::CALLBACK_MODIFY_IMG_PATH, function($imgPath) use ($provider){
 			return str_replace($provider->publicPath(), '', $imgPath);
+		});
+
+		// add the public path if the file being transformed does not (yet) exist on s3 - ie if transforming a local image to be cached on s3
+		$image->addCallback(KevBaldwyn\Image\Image::CALLBACK_MODIFY_IMG_SRC_PATH, function($path) use ($provider) {
+			if(!preg_match('/\.amazonaws\./', $path)) {
+				return $provider->publicPath() . $path;
+			}
+			return $path;
 		});
 	}
 
