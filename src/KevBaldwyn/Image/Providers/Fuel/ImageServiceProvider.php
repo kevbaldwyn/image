@@ -20,7 +20,7 @@ class ImageServiceProvider {
 	public function register()
 	{
 		$image = $this->image;
-		$route = $this->image->getProvider()->getRouteName();
+		$route = trim($this->image->getProvider()->getRouteName(), '/');
 
 		Router::add($route, new Route($route, function() use ($image) {
 			$image->serve();
