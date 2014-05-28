@@ -3,6 +3,7 @@
 use KevBaldwyn\Image\Providers\Fuel as FuelProvider;
 use KevBaldwyn\Image\Image;
 use Router;
+use Route;
 
 class ImageServiceProvider {
 
@@ -13,6 +14,9 @@ class ImageServiceProvider {
 		$this->image = $image;
 	}
 
+	/**
+	 * can be used in the app_created Event to initialse the route
+	 */
 	public function register()
 	{
 		$image = $this->image;
