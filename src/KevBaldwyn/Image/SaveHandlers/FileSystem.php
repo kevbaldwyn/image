@@ -31,11 +31,12 @@ class FileSystem implements SaveHandlerInterface {
 
 	public function save($filename, array $data)
 	{
-		$path = $this->basePath . $this->dir;
+		$path = '/' . dirname($filename);
+		$file = basename($path);
 		if(!is_dir($path)) {
-			mkdir($path);
+			mkdir($path, true);
 		}
-		file_put_contents($path . $filename, $data['data']);
+		file_put_contents($path . $file, $data['data']);
 	}
 
 	public function registerCallbacks(Image $image, ProviderInterface $provider) {}

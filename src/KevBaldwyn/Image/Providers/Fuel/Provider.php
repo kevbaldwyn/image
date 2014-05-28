@@ -48,12 +48,12 @@ class Provider implements ProviderInterface {
 
 	public function basePath()
 	{
-		return DOCROOT . '/../';
+		return DOCROOT . '/..';
 	}
 
 	public function publicPath()
 	{
-		return DOCROOT;
+		return rtrim(DOCROOT, '/');
 	}
 
 	public function getFromCache($checksum)
