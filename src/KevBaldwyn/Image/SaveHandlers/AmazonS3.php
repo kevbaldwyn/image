@@ -36,11 +36,13 @@ class AmazonS3 implements SaveHandlerInterface {
 
 	public function save($filename, array $data)
 	{
+		$filename = str_replace($this->getPublicPath(), '', $filename);
 		$this->client->putObject(array(
 		    'Bucket' => $this->bucket,
 		    'ACL'    => 'public-read',
 		    'Key'    => $this->basePath . '/' . $filename,
-		    'Body'   => EntityBody::factory($data['data'])
+		    'Body'   => EntityBody::factory($data['data']),
+		    'ContentType' => $data['mime']
 		));
 	}
 
