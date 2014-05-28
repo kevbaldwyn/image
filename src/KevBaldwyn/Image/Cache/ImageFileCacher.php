@@ -42,7 +42,7 @@ class ImageFileCacher implements CacherInterface {
 	public function serve()
 	{
 		// 301 to file / url
-		header('Location: ', $this->saveHandler->getPublicPath() . $this->getFilename());
+		header('Location: ' . $this->saveHandler->getPublicPath() . $this->getFilename());
 		die();
 	}
 
