@@ -11,6 +11,5 @@ interface SaveHandlerInterface {
 
 	public function save($filename, array $data);
 
-	public function registerCallbacks(Image $image, ProviderInterface $provider);
-
+	public function getSrcPath();
 }

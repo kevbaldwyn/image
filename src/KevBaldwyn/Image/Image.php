@@ -24,8 +24,6 @@ class Image {
 	 * some constants for strings used internally
 	 */
 	const EVENT_ON_CREATED = 'kevbaldwyn.image.created';
-	const CALLBACK_MODIFY_IMG_PATH     = 'callback.modifyImgPath';
-	const CALLBACK_MODIFY_IMG_SRC_PATH = 'callback.modifyImgSrcPath';
 
 
 	public function __construct(ProviderInterface $provider, $cacheLifetime, $serveRoute, CacherInterface $cacher) {
@@ -33,8 +31,6 @@ class Image {
 		$this->cacher         = $cacher;
 		$this->cacheLifetime  = $cacheLifetime;
 		$this->pathStringBase = $serveRoute;
-
-		$cacher->register($this);
 	}
 
 
@@ -64,24 +60,17 @@ class Image {
 	 */
 	public function getImagePath()
 	{
-		$imgPath = $this->provider->publicPath() . $this->provider->getQueryStringData($this->provider->getVarImage());
-		if(array_key_exists(self::CALLBACK_MODIFY_IMG_PATH, $this->callbacks)) {
-			foreach($this->callbacks[self::CALLBACK_MODIFY_IMG_PATH] as $callback) {
-				$imgPath = $callback($imgPath);
-			}
-		}
+		//$imgPath = $this->provider->publicPath() . $this->provider->getQueryStringData($this->provider->getVarImage());
+		$imgPath = $this->provider->getQueryStringData($this->provider->getVarImage());
+
 		return $imgPath;
 	}
 
 
 	public function getSrcPath()
 	{
-		$path = $this->getImagePath();
-		if(array_key_exists(self::CALLBACK_MODIFY_IMG_SRC_PATH, $this->callbacks)) {
-			foreach($this->callbacks[self::CALLBACK_MODIFY_IMG_SRC_PATH] as $callback) {
-				$path = $callback($path);
-			}
-		}
+		$path = $this->cacher->getSrcPath();
+
 		return $path;
 	}
 
@@ -159,12 +148,13 @@ class Image {
 			$operations = $this->getOperations();
 
 			// check cache
-			$this->cacher->init($this->getImagePath(), $operations, $this->cacheLifetime);
+			$this->cacher->init($this->getImagePath(), $operations, $this->cacheLifetime, $this->provider->publicPath());
 
 			// get the correctly instantiated server object
 			if($this->cacher->exists()) {
 				$this->server = new CacheServer($this->cacher);
 			}else{
+				// src path needs to come from the save mechanisim...
 				$worker = Imagecow::create($this->getSrcPath(), $this->provider->getWorkerName());
 				$this->server = new ImageCowServer(
 					$worker, 
@@ -175,17 +165,6 @@ class Image {
 		}
 
 		return $this->server;
-	}
-
-
-	/**
-	 * add a callback
-	 * @param string  $type     the type of callback to be added
-	 * @param Closure $callback the callback
-	 */
-	public function addCallback($type, Closure $callback)
-	{
-		$this->callbacks[$type][] = $callback;
 	}
 
 

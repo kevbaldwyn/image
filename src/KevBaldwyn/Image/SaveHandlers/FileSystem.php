@@ -16,29 +16,51 @@ class FileSystem implements SaveHandlerInterface {
 	}
 
 
+	public function setPaths($imgPath, $publicPath)
+	{
+		$this->srcPath = $publicPath . $imgPath;
+		$this->savePath = dirname($this->srcPath) . '/';
+	}
+
+
 	public function getPublicPath()
 	{
-		return $this->dir;
+		return $this->basePath;
+	}
+
+
+	public function getPublicServePath()
+	{
+		return str_replace($this->basePath, '', $this->savePath);
+	}
+
+
+	public function getSrcPath()
+	{
+		return $this->srcPath;
+	}
+
+
+	public function getSavePath()
+	{
+		return $this->savePath;
 	}
 
 
 	public function exists($filename)
 	{
-		$filePath = $this->basePath . $this->getPublicPath() . $filename;
+		$filePath = $this->savePath . $filename;
 		return file_exists($filePath);
 	}
 
 
 	public function save($filename, array $data)
 	{
-		$path = '/' . dirname($filename);
-		$file = basename($path);
+		$path = $this->savePath;
 		if(!is_dir($path)) {
 			mkdir($path, true);
 		}
-		file_put_contents($path . $file, $data['data']);
+		file_put_contents($path . $filename, $data['data']);
 	}
-
-	public function registerCallbacks(Image $image, ProviderInterface $provider) {}
 
 }

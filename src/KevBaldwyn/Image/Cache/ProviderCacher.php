@@ -17,10 +17,13 @@ class ProviderCacher implements CacherInterface {
 	}
 
 
-	public function register(Image $image) {}
+	public function getSrcPath()
+	{
+		return $this->publicPath . $this->imgPath;
+	}
 
 
-	public function init($imgPath, $operations, $cacheLifetime)
+	public function init($imgPath, $operations, $cacheLifetime, $publicPath)
 	{
 		$this->imgPath       = $imgPath;
 		$this->operations    = $operations;

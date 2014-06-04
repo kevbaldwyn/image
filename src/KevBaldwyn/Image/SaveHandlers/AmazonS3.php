@@ -11,6 +11,8 @@ class AmazonS3 implements SaveHandlerInterface {
 	private $client;
 	private $bucket;
 	private $basePath;
+	private $srcPath;
+	private $savePath;
 
 
 	public function __construct(S3Client $client, $bucket, $basePath)
@@ -23,46 +25,61 @@ class AmazonS3 implements SaveHandlerInterface {
 	}
 
 
+	public function setPaths($imgPath, $publicPath)
+	{
+		// if not on s3 then assume a local file
+		if(!preg_match('/\.amazonaws\./', $imgPath)) {
+			$savePath = $imgPath;
+			$imgPath  = $publicPath . $imgPath;
+		}else{
+			$savePath = str_replace($this->getPublicPath(), '', $imgPath);
+		}
+
+		$this->srcPath  = $imgPath;
+		$this->savePath = dirname(trim($savePath, '/')) . '/';
+	}
+
+
 	public function getPublicPath()
 	{
 		return 'https://' . $this->bucket . '.s3.amazonaws.com/' . $this->basePath . '/';
 	}
 
 
+	public function getPublicServePath()
+	{
+		return $this->getPublicPath() . $this->getSavePath();
+	}
+
+
+	public function getSrcPath()
+	{
+		return $this->srcPath;
+	}
+
+
+	public function getSavePath()
+	{
+		return $this->savePath;
+	}
+
+
 	public function exists($filename)
 	{
-		$filePath = 's3://' . $this->bucket . '/'. $this->basePath . '/' . $filename;
+		$filePath = 's3://' . $this->bucket . '/'. $this->basePath . '/' . $this->savePath . $filename;
 		return file_exists($filePath);
 	}
 
 
 	public function save($filename, array $data)
 	{
-		$filename = str_replace($this->getPublicPath(), '', $filename);
 		$this->client->putObject(array(
 		    'Bucket' => $this->bucket,
 		    'ACL'    => 'public-read',
-		    'Key'    => $this->basePath . '/' . $filename,
+		    'Key'    => $this->basePath . '/' . $this->savePath . $filename,
 		    'Body'   => EntityBody::factory($data['data']),
 		    'ContentType' => $data['mime']
 		));
-	}
-
-
-	public function registerCallbacks(Image $image, ProviderInterface $provider)
-	{
-		// remove public path (http:// part) from image path
-		$image->addCallback(Image::CALLBACK_MODIFY_IMG_PATH, function($imgPath) use ($provider){
-			return str_replace($provider->publicPath(), '', $imgPath);
-		});
-
-		// add the public path if the file being transformed does not (yet) exist on s3 - ie if transforming a local image to be cached on s3
-		$image->addCallback(Image::CALLBACK_MODIFY_IMG_SRC_PATH, function($path) use ($provider) {
-			if(!preg_match('/\.amazonaws\./', $path)) {
-				return $provider->publicPath() . $path;
-			}
-			return $path;
-		});
 	}
 
 }

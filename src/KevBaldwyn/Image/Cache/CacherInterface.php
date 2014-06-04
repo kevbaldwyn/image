@@ -5,7 +5,7 @@ use KevBaldwyn\Image\Image;
 
 interface CacherInterface {
 
-	public function init($imgPath, $operations, $cacheLifetime);
+	public function init($imgPath, $operations, $cacheLifetime, $publicPath);
 
 	public function exists();
 
@@ -13,5 +13,6 @@ interface CacherInterface {
 
 	public function put($data);
 
-	public function register(Image $image);
+	public function getSrcPath();
+
 }

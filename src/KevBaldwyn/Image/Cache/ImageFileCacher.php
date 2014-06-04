@@ -5,7 +5,7 @@ use KevBaldwyn\Image\Image;
 
 class ImageFileCacher implements CacherInterface {
 
-	protected $imgPath;
+	protected $srcPath;
 	protected $operations;
 	protected $cacheLifetime;
 	protected $saveHandler;
@@ -17,18 +17,13 @@ class ImageFileCacher implements CacherInterface {
 	}
 
 
-	public function init($imgPath, $operations, $cacheLifetime)
+	public function init($imgPath, $operations, $cacheLifetime, $publicPath)
 	{
-		$this->imgPath       = $imgPath;
+		$this->srcPath       = $imgPath;
 		$this->operations    = $operations;
 		$this->cacheLifetime = $cacheLifetime;
-	}
 
-
-	public function register(Image $image)
-	{
-		$provider = $image->getProvider();
-		$this->saveHandler->registerCallbacks($image, $provider);
+		$this->saveHandler->setPaths($this->srcPath, $publicPath);
 	}
 
 
@@ -39,10 +34,22 @@ class ImageFileCacher implements CacherInterface {
 	}
 
 
+	public function getSrcPath()
+	{
+		return $this->saveHandler->getSrcPath();
+	}
+
+
+	public function getSavePath()
+	{
+		return $this->saveHandler->getSavePath();
+	}
+
+
 	public function serve()
 	{
 		// 301 to file / url
-		header('Location: ' . $this->saveHandler->getPublicPath() . $this->getFilename());
+		header('Location: ' . $this->saveHandler->getPublicServePath() . $this->getFilename());
 		die();
 	}
 
@@ -57,12 +64,11 @@ class ImageFileCacher implements CacherInterface {
 
 	public function getFilename()
 	{
-		// transform $imgPath + $operations into a unique filename
-		$file = basename($this->imgPath);
-		$dir  = dirname($this->imgPath);
+		// transform $srcPath + $operations into a unique filename
+		$file = basename($this->srcPath);
 
 		$ops = str_replace(array('&', ':', ';', '?', '.', ','), '-', $this->operations);
-		return trim($dir . '/' . $ops . '-' . $file, './');
+		return trim($ops . '-' . $file, './');
 	}
 
 }
