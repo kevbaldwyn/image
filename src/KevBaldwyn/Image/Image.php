@@ -24,6 +24,7 @@ class Image {
 	 * some constants for strings used internally
 	 */
 	const EVENT_ON_CREATED = 'kevbaldwyn.image.created';
+	const CALLBACK_MODIFY_IMG_PATH = 'callback.modifyImgPath';
 
 
 	public function __construct(ProviderInterface $provider, $cacheLifetime, $serveRoute, CacherInterface $cacher) {
@@ -60,8 +61,12 @@ class Image {
 	 */
 	public function getImagePath()
 	{
-		//$imgPath = $this->provider->publicPath() . $this->provider->getQueryStringData($this->provider->getVarImage());
 		$imgPath = $this->provider->getQueryStringData($this->provider->getVarImage());
+		if(array_key_exists(self::CALLBACK_MODIFY_IMG_PATH, $this->callbacks)) {
+			foreach($this->callbacks[self::CALLBACK_MODIFY_IMG_PATH] as $callback) {
+				$imgPath = $callback($imgPath);
+			}
+		}
 
 		return $imgPath;
 	}
@@ -245,7 +250,8 @@ class Image {
 	 */
 	private function getPathOptions($params) {
 
-		$first = $params[0];
+		$first      = $params[0];
+		$transformA = array();
 
 		foreach($params as $key => $param) {
 			if($key > 0) {
@@ -263,5 +269,17 @@ class Image {
 	{
 		return $this->provider;
 	}
+
+
+	/**
+	 * add a callback
+	 * @param string  $type     the type of callback to be added
+	 * @param Closure $callback the callback
+	 */
+	public function addCallback($type, Closure $callback)
+	{
+		$this->callbacks[$type][] = $callback;
+	}
+
 
 }

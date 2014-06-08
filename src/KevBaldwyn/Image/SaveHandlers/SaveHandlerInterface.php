@@ -12,4 +12,6 @@ interface SaveHandlerInterface {
 	public function save($filename, array $data);
 
 	public function getSrcPath();
+
+	public function setPaths($imgPath, $publicPath);
 }
