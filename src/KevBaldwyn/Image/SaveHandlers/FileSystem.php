@@ -9,10 +9,9 @@ class FileSystem implements SaveHandlerInterface {
 	private $dir;
 
 
-	public function __construct(ProviderInterface $provider, $dir)
+	public function __construct(ProviderInterface $provider)
 	{
 		$this->basePath = $provider->publicPath();
-		$this->dir      = $dir;
 	}
 
 
