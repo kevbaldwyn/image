@@ -17,11 +17,12 @@ class FileSystemTest extends \PHPUnit_Framework_TestCase {
 		$provider = m::mock('\KevBaldwyn\Image\Providers\ProviderInterface');
 		$provider->shouldReceive('publicPath')->andReturn($basePath);
 
-		$fileSystem = new FileSystem($provider, 'assets/upload/');
+		$fileSystem = new FileSystem($provider);
+		$fileSystem->setPaths('assets/image.jpg', $basePath);
 		$fileSystem->save($fileName, $data);
 
-		$this->assertTrue(file_exists($basePath . 'assets/upload/' . $fileName));
-		unlink($basePath . 'assets/upload/' . $fileName);
+		$this->assertTrue(file_exists($basePath . 'assets/' . $fileName));
+		unlink($basePath . 'assets/' . $fileName);
 	}
 
 
@@ -33,17 +34,15 @@ class FileSystemTest extends \PHPUnit_Framework_TestCase {
 		$provider = m::mock('\KevBaldwyn\Image\Providers\ProviderInterface');
 		$provider->shouldReceive('publicPath')->andReturn($basePath);
 
-		$fileSystem = new FileSystem($provider, 'assets/upload/');
+		$fileSystem = new FileSystem($provider);
+		$fileSystem->setPaths('assets/image.jpg', $basePath);
 
-		if(!is_dir($basePath . 'assets/upload/')) {
-			mkdir($basePath . 'assets/upload/');
-		}
 		// create and check api finds it
-		file_put_contents($basePath . 'assets/upload/' . $filename, file_get_contents($basePath . 'assets/image.jpg'));
+		file_put_contents($basePath . 'assets/' . $filename, file_get_contents($basePath . 'assets/image.jpg'));
 		$this->assertTrue($fileSystem->exists($filename));
 
 		// delete file and check again
-		unlink($basePath . 'assets/upload/existingfile.jpg');
+		unlink($basePath . 'assets/existingfile.jpg');
 		$this->assertFalse($fileSystem->exists($filename));
 	}
 

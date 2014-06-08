@@ -17,7 +17,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase {
 			return $path . '/append';
 		});
 
-		$this->assertSame('/prepend' . __DIR__ . '/assets/image.jpg/append', $image->getImagePath());
+		$this->assertSame('/prepend/assets/image.jpg/append', $image->getImagePath());
 	}
 
 
@@ -85,6 +85,7 @@ class ImageTest extends \PHPUnit_Framework_TestCase {
 		$cacher = static::mockCacher();
 		$cacher->shouldReceive('exists')->andReturn(false);
 		$cacher->shouldReceive('put');
+		$cacher->shouldReceive('getSrcPath')->andReturn(__DIR__ . '/assets/image.jpg');
 
 		$image = new Image(static::mockProvider(), 100, '/image-server', $cacher);
 		$data = $image->getImageData();
