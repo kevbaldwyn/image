@@ -6,8 +6,6 @@ use KevBaldwyn\Image\Providers\ProviderInterface;
 class FileSystem implements SaveHandlerInterface {
 
 	private $basePath;
-	private $dir;
-
 
 	public function __construct(ProviderInterface $provider)
 	{
