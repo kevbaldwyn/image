@@ -27,12 +27,17 @@ class AmazonS3 implements SaveHandlerInterface {
 
 	public function setPaths($imgPath, $publicPath)
 	{
-		// if not on s3 then assume a local file
-		if(!preg_match('/^https?\:\/\//', $imgPath)) {
+		// if on s3
+		if(preg_match('/\.amazonaws\./', $imgPath)) {
+			$savePath = str_replace($this->getPublicPath(), '', $imgPath);
+		// if remote somewhere else
+		}elseif(preg_match('/^https?\:\/\//', $imgPath)) {
+			$url      = parse_url($imgPath);
+			$savePath = trim($publicPath, '/') . '/' . trim($url['path'], '/');
+		// if local
+		}else{
 			$savePath = $imgPath;
 			$imgPath  = $publicPath . $imgPath;
-		}else{
-			$savePath = str_replace($this->getPublicPath(), '', $imgPath);
 		}
 
 		$this->srcPath  = $imgPath;
