@@ -33,7 +33,7 @@ class AmazonS3 implements SaveHandlerInterface {
 		// if remote somewhere else
 		}elseif(preg_match('/^https?\:\/\//', $imgPath)) {
 			$url      = parse_url($imgPath);
-			$savePath = trim($publicPath, '/') . '/' . trim($url['path'], '/');
+			$savePath = trim($url['path'], '/') . $imgPath;
 		// if local
 		}else{
 			$savePath = $imgPath;
