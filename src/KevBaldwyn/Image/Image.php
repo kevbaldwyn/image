@@ -19,6 +19,7 @@ class Image {
 	private $callbacks = array();
 
 	private $server;
+	private $expires;
 
 	/**
 	 * some constants for strings used internally
@@ -27,11 +28,12 @@ class Image {
 	const CALLBACK_MODIFY_IMG_PATH = 'callback.modifyImgPath';
 
 
-	public function __construct(ProviderInterface $provider, $cacheLifetime, $serveRoute, CacherInterface $cacher) {
+	public function __construct(ProviderInterface $provider, $cacheLifetime, $serveRoute, CacherInterface $cacher, $expires = 3600) {
 		$this->provider       = $provider;
 		$this->cacher         = $cacher;
 		$this->cacheLifetime  = $cacheLifetime;
 		$this->pathStringBase = $serveRoute;
+		$this->expires        = $expires;
 	}
 
 
@@ -128,6 +130,7 @@ class Image {
 	 */
 	public function serve() {
 
+		header('Expires: ' . gmdate('D, d M Y H:i:s \G\M\T', time() + $this->expires));
 		$server = $this->getServer();
 
 		if(!$server->isFromCache()) {
