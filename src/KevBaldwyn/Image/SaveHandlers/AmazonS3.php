@@ -28,7 +28,7 @@ class AmazonS3 implements SaveHandlerInterface {
 	public function setPaths($imgPath, $publicPath)
 	{
 		// if not on s3 then assume a local file
-		if(!preg_match('/\.amazonaws\./', $imgPath)) {
+		if(!preg_match('/^https?\:\/\//', $imgPath)) {
 			$savePath = $imgPath;
 			$imgPath  = $publicPath . $imgPath;
 		}else{
