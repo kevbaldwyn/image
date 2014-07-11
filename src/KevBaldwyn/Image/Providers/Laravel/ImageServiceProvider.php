@@ -1,7 +1,10 @@
-<?php namespace KevBaldwyn\Image;
+<?php namespace KevBaldwyn\Image\Providers\Laravel;
 
 use Config;
 use Illuminate\Support\ServiceProvider;
+use KevBaldwyn\Image\Providers\Laravel\Provider as LaravelProvider;
+use KevBaldwyn\Image\Image;
+use KevBaldwyn\Image\Providers\Laravel\Commands\MoveAssetCommand;
 
 class ImageServiceProvider extends ServiceProvider {
 
@@ -25,22 +28,13 @@ class ImageServiceProvider extends ServiceProvider {
 	public function register()
 	{
 		
-		Config::package('kevbaldwyn/image', __DIR__.'/../../config');
+		Config::package('kevbaldwyn/image', __DIR__.'/../../../../../config');
 
-		$this->registerWorker();
 		$this->registerCache();
+		$this->registerImageFileSaveHandler();
 		$this->registerImage();
 
 		$this->registerCommands();
-
-	}
-
-
-	private function registerWorker() {
-
-		$this->app->bind('kevbaldwyn.image.worker', function() {
-			return \Imagecow\Image::create(Config::get('image::worker'));
-		});
 
 	}
 
@@ -60,15 +54,30 @@ class ImageServiceProvider extends ServiceProvider {
 	}
 
 
+	private function registerImageFileSaveHandler()
+	{
+		$app = $this->app;
+		$this->app->bind('kevbaldwyn.image.saveHandler', function() use ($app) {
+			//return new S3Handler();
+			return new FileSystem($provider, '');
+		});
+	}
+
+
 	private function registerImage() {
 
 		$app = $this->app;
 
 		$this->app->bind('kevbaldwyn.image', function() use ($app) {
-			return new \KevBaldwyn\Image\Image($app['kevbaldwyn.image.worker'], 
-											   $app['kevbaldwyn.image.cache'],
-											   Config::get('image::cache.lifetime'),
-											   Config::get('image::route'));
+			$provider = new LaravelProvider($app['kevbaldwyn.image.cache']);
+			// option 1
+			$cacher   = new ProviderCacher($provider);
+			// option 2
+			// $cacher   = new ImageFileCacher($app['kevbaldwyn.image.saveHandler']);
+			return new Image($provider,
+							 Config::get('image::cache.lifetime'),
+							 Config::get('image::route'),
+							 $cacher);
 		});
 
 	}
@@ -77,7 +86,7 @@ class ImageServiceProvider extends ServiceProvider {
 	private function registerCommands() {
 
 		$this->app['command.kevbaldwyn.image.moveasset'] = $this->app->share(function($app) {
-			return new Commands\MoveAssetCommand();
+			return new MoveAssetCommand();
 		});
 				
 		$this->commands('command.kevbaldwyn.image.moveasset');

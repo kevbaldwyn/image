@@ -1,31 +1,47 @@
 <?php namespace KevBaldwyn\Image;
 
-use Config;
-use Input;
+use KevBaldwyn\Image\Providers\ProviderInterface;
+use KevBaldwyn\Image\Servers\Cache as CacheServer;
+use KevBaldwyn\Image\Cache\CacherInterface;
+use KevBaldwyn\Image\Servers\ImageCow as ImageCowServer;
+use Imagecow\Image as ImageCow;
+use Closure;
 
 class Image {
 
-	private $worker;
-	private $cache;
+	private $provider;
+	private $cacher;
 	private $cacheLifetime; // minutes
 
 	private $pathStringbase = '';
 	private $pathString;
 
+	private $callbacks = array();
 
-	public function __construct($worker, \Illuminate\Cache\CacheManager $cache, $cacheLifetime, $pathString) {
-		$this->worker = $worker;
-		$this->cache = $cache;
-		$this->cacheLifetime = $cacheLifetime;
-		$this->pathStringBase = $pathString . '?';
+	private $server;
+	private $expires;
+
+	/**
+	 * some constants for strings used internally
+	 */
+	const EVENT_ON_CREATED = 'kevbaldwyn.image.created';
+	const CALLBACK_MODIFY_IMG_PATH = 'callback.modifyImgPath';
+
+
+	public function __construct(ProviderInterface $provider, $cacheLifetime, $serveRoute, CacherInterface $cacher, $expires = 3600) {
+		$this->provider       = $provider;
+		$this->cacher         = $cacher;
+		$this->cacheLifetime  = $cacheLifetime;
+		$this->pathStringBase = $serveRoute;
+		$this->expires        = $expires;
 	}
 
 
-	public function getWorker() {
-		return $this->worker;
-	}
-
-
+	/**
+	 * build the responsive image part of the url
+	 * any number of parameters can be sent
+	 * @return static $this
+	 */
 	public function responsive(/* any number of params */) {
 		$params = func_get_args();
 		if(count($params) <= 1) {
@@ -35,11 +51,41 @@ class Image {
 		list($rule, $transform) = $this->getPathOptions($params);
 
 		// write out the reposinsive url part
-		$this->pathString .= ';' . $rule . ':' . $transform . '&' . Config::get('image::vars.responsive_flag') . '=true';
+		$this->pathString .= ';' . $rule . ':' . $transform . '&' . $this->provider->getVarResponsiveFlag() . '=true';
 		return $this;
 	}
 
 
+	/**
+	 * get the path to the image
+	 * callbacks can be applied to modify the path
+	 * @return string path to the image to be used
+	 */
+	public function getImagePath()
+	{
+		$imgPath = $this->provider->getQueryStringData($this->provider->getVarImage());
+		if(array_key_exists(self::CALLBACK_MODIFY_IMG_PATH, $this->callbacks)) {
+			foreach($this->callbacks[self::CALLBACK_MODIFY_IMG_PATH] as $callback) {
+				$imgPath = $callback($imgPath);
+			}
+		}
+
+		return $imgPath;
+	}
+
+
+	public function getSrcPath()
+	{
+		$path = $this->cacher->getSrcPath();
+
+		return $path;
+	}
+
+
+	/**
+	 * build the initial transformed path for the image
+	 * @return static $this
+	 */
 	public function path(/* any number of params */) {
 		
 		$params = func_get_args();
@@ -50,64 +96,99 @@ class Image {
 		list($img, $transform) = $this->getPathOptions($params);
 
 		// write out the resize path
-		$this->pathString = $this->pathStringBase;
-		$this->pathString .= Config::get('image::vars.image') . '=' . $img;
-		$this->pathString .= '&' . Config::get('image::vars.transform') . '=' . $transform;
+		$this->pathString = $this->getBasePath();
+		$this->pathString .= $this->provider->getVarImage() . '=' . $img;
+		$this->pathString .= '&' . $this->provider->getVarTransform() . '=' . $transform;
 		return $this;
 	}
 
 
+	/**
+	 * get the data for the image
+	 * @return array ['mime' => string, 'data' => string]
+	 */
+	public function getImageData()
+	{
+		$server = $this->getServer();
+		return $server->getImageData();
+	}
+
+
+	/**
+	 * check if we are serving from the cache
+	 * @return boolean
+	 */
+	public function isFromCache()
+	{
+		return $this->getServer()->isFromCache();
+	}
+
+
+	/**
+	 * serve and output the new image
+	 * @return image data and headers
+	 */
 	public function serve() {
-		if(Input::get(Config::get('image::vars.responsive_flag')) == 'true') {
-			$operations = $this->worker->getResponsiveOperations($_COOKIE['Imagecow_detection'], Input::get(Config::get('image::vars.transform')));
-		}else{
-			$operations = Input::get(Config::get('image::vars.transform'));
-		}
 
-		// is there ant merit in this being base_path()?
-		// if it was base_path() then any image on the filesystem could be served - is this actually desirable?
-		$imgPath = public_path() . Input::get(Config::get('image::vars.image'));
-		
-		$checksum  = md5($imgPath . ';' . serialize($operations));
-		$cacheData = $this->cache->get($checksum);
-		
-		if($cacheData) {
+		header('Expires: ' . gmdate('D, d M Y H:i:s \G\M\T', time() + $this->expires));
+		header('Cache-Control: private, max-age=' . time() + $this->expires);
+		$server = $this->getServer();
 
-			// using cache
-			if (($string = $cacheData['data']) && ($mimetype = $cacheData['mime'])) {
-				header('Content-Type: '.$mimetype);
-				die($string);
-			}else{
-				throw new \Exception('There was an error with the image cache');
-			}
+		if(!$server->isFromCache()) {
+			$server->create();
 
-		}else{
-
-			$this->worker->load($imgPath)
-						 ->transform($operations);
-			
-			$cacheData = array('mime' => $this->worker->getMimeType(),
-							   'data' => $this->worker->getString());
-
-			$this->cache->put($checksum, $cacheData, $this->cacheLifetime);
-
-			$this->worker->show();
-			
-			// if the script didn't die then it will have an error (Imagecow::show() dies when it returns image data)
-			throw new \Exception($this->worker->getError()->getMessage());
-			
+			$this->provider->fireEvent(self::EVENT_ON_CREATED, array($this->getImagePath(), $server->getWorker(), $this->getOperations()));
 		}	
+
+		$server->serve();
 		
 	}
 
 
+	/**
+	 * get the correctly instaniated server image in play
+	 * takes into account cache and configured options
+	 * @return KevBaldwyn\Image\Servers\ServerInterface
+	 */
+	private function getServer()
+	{
+		if(is_null($this->server)) {
+			// get the tarnsformations
+			$operations = $this->getOperations();
+
+			// check cache
+			$this->cacher->init($this->getImagePath(), $operations, $this->cacheLifetime, $this->provider->publicPath());
+
+			// get the correctly instantiated server object
+			if($this->cacher->exists()) {
+				$this->server = new CacheServer($this->cacher);
+			}else{
+				// src path needs to come from the save mechanisim...
+				$worker = Imagecow::create($this->getSrcPath(), $this->provider->getWorkerName());
+				$this->server = new ImageCowServer(
+					$worker, 
+					$operations,
+					$this->cacher
+				);
+			}
+		}
+
+		return $this->server;
+	}
+
+
+	/**
+	 * output the javascript file to be used by the ImageCow responsive functionality
+	 * @param  string $publicDir the path the file sits under
+	 * @return string            the javascript
+	 */
 	public function js($publicDir = '/public') {
 		
-		$jsFile = Config::get('image::js_path');
+		$jsFile = $this->provider->getJsPath();
 
 		// hacky hack hack
 		// if .js file doesn't exist in defined location then copy it there?! (or throw an error?)
-		if(!file_exists(base_path() . $jsFile)) {
+		if(!file_exists($this->provider->basePath() . $jsFile)) {
 			throw new \Exception('Javascript file does not exists! Please copy /vendor/imagecow/imagecow/Imagecow/Imagecow.js to ' . $jsFile);
 		}
 
@@ -131,14 +212,50 @@ class Image {
 	}
 
 
+	/**
+	 * returns the path to the image
+	 * @return string
+	 */
 	public function __toString() {
 		return $this->pathString;
 	}
 
 
+	/**
+	 * get the base path for the image server
+	 * @return string 
+	 */
+	private function getBasePath()
+	{
+		$basePath = $this->pathStringBase;
+		return $basePath . '?';
+	}
+
+
+	/**
+	 * get the options passed to the instance for performing the transformation
+	 * @return array
+	 */
+	private function getOperations()
+	{
+		if($this->provider->getQueryStringData($this->provider->getVarResponsiveFlag()) == 'true') {
+			$operations = Imagecow::getResponsiveOperations($_COOKIE['Imagecow_detection'], $this->provider->getQueryStringData($this->provider->getVarTransform()));
+		}else{
+			$operations = $this->provider->getQueryStringData($this->provider->getVarTransform());
+		}
+		return $operations;
+	}
+
+
+	/**
+	 * build the path options for the server path string
+	 * @param  array $params the transform options
+	 * @return array         
+	 */
 	private function getPathOptions($params) {
 
-		$first = $params[0];
+		$first      = $params[0];
+		$transformA = array();
 
 		foreach($params as $key => $param) {
 			if($key > 0) {
@@ -150,5 +267,23 @@ class Image {
 		return array($first, $transform);
 
 	}
+
+
+	public function getProvider()
+	{
+		return $this->provider;
+	}
+
+
+	/**
+	 * add a callback
+	 * @param string  $type     the type of callback to be added
+	 * @param Closure $callback the callback
+	 */
+	public function addCallback($type, Closure $callback)
+	{
+		$this->callbacks[$type][] = $callback;
+	}
+
 
 }
