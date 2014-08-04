@@ -131,7 +131,8 @@ class Image {
 	public function serve() {
 
 		header('Expires: ' . gmdate('D, d M Y H:i:s \G\M\T', time() + $this->expires));
-		header('Cache-Control: "public, max-age=' . time() + $this->expires . '"');
+		header('Last-Modified: ' . gmdate('D, d M Y H:i:s \G\M\T', time()));
+		header('Cache-Control: public, max-age=' . $this->expires);
 		$server = $this->getServer();
 
 		if(!$server->isFromCache()) {
