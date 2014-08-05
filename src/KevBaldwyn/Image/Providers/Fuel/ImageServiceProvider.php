@@ -4,6 +4,7 @@ use KevBaldwyn\Image\Providers\Fuel as FuelProvider;
 use KevBaldwyn\Image\Image;
 use Router;
 use Route;
+use Closure;
 
 class ImageServiceProvider {
 
