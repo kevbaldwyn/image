@@ -133,6 +133,7 @@ class Image {
 		header('Expires: ' . gmdate('D, d M Y H:i:s \G\M\T', time() + $this->expires));
 		header('Last-Modified: ' . gmdate('D, d M Y H:i:s \G\M\T', time()));
 		header('Cache-Control: public, max-age=' . $this->expires);
+		header('Content-Type: ' . $this->getMimeType());
 		$server = $this->getServer();
 
 		if(!$server->isFromCache()) {
@@ -143,6 +144,25 @@ class Image {
 
 		$server->serve();
 		
+	}
+
+
+	private function getMimeType()
+	{
+		$info = $this->getImagePath();
+
+		$type = 'image/jpeg';
+		if(is_array($info) && array_key_exists('extension', $info)) {
+			switch(strtolower($info['extension'])) {
+				case 'png' :
+					$type = 'image/png';
+					break;
+				case 'gif' :
+					$type = 'image/gif';
+					break;
+			}
+		}
+		return $type;
 	}
 
 
