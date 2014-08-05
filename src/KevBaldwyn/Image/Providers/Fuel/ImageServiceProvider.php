@@ -23,7 +23,12 @@ class ImageServiceProvider {
 		$route = trim($this->image->getProvider()->getRouteName(), '/');
 
 		Router::add($route, new Route($route, function() use ($image) {
-			$image->serve();
+			try {
+				$image->serve();
+			}catch(\Exception $e) {
+				http_response_code(404);
+				die($e->getMessage());
+			}
 		}));
 	}
 
