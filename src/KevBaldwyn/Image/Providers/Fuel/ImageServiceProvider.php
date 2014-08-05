@@ -17,18 +17,16 @@ class ImageServiceProvider {
 	/**
 	 * can be used in the app_created Event to initialse the route
 	 */
-	public function register()
+	public function register(Closure $headerCallback = null)
 	{
 		$image = $this->image;
 		$route = trim($this->image->getProvider()->getRouteName(), '/');
 
-		Router::add($route, new Route($route, function() use ($image) {
-			try {
-				$image->serve();
-			}catch(\Exception $e) {
-				http_response_code(404);
-				die($e->getMessage());
+		Router::add($route, new Route($route, function() use ($image, $headerCallback) {
+			if(!is_null($headerCallback)) {
+				$headerCallback();
 			}
+			$image->serve();
 		}));
 	}
 

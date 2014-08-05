@@ -129,10 +129,12 @@ class Image {
 	 * @return image data and headers
 	 */
 	public function serve() {
-
+		// handle headers in route callback so they can be custom
+		/*
 		header('Expires: ' . gmdate('D, d M Y H:i:s \G\M\T', time() + $this->expires));
 		header('Last-Modified: ' . gmdate('D, d M Y H:i:s \G\M\T', time()));
 		header('Cache-Control: public, max-age=' . $this->expires);
+		*/
 		header('Content-Type: ' . $this->getMimeType());
 		$server = $this->getServer();
 
