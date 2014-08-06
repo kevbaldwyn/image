@@ -25,7 +25,7 @@ class ImageServiceProvider {
 
 		Router::add($route, new Route($route, function() use ($image, $headerCallback) {
 			if(!is_null($headerCallback)) {
-				$headerCallback();
+				$headerCallback($image);
 			}
 			$image->serve();
 		}));
