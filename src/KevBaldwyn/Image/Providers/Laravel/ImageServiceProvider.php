@@ -5,6 +5,7 @@ use Illuminate\Support\ServiceProvider;
 use KevBaldwyn\Image\Providers\Laravel\Provider as LaravelProvider;
 use KevBaldwyn\Image\Image;
 use KevBaldwyn\Image\Providers\Laravel\Commands\MoveAssetCommand;
+use KevBaldwyn\Image\Cache\ProviderCacher;
 
 class ImageServiceProvider extends ServiceProvider {
 
