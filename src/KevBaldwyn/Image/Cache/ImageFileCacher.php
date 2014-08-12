@@ -50,15 +50,18 @@ class ImageFileCacher implements CacherInterface {
 	{
 		// which is faster?
 		// 301 to file / url
-		//header('Location: ' . $this->saveHandler->getPublicServePath() . $this->getFilename());
-		//die();
+		header('HTTP/1.1 301');
+		header('Location: ' . $this->saveHandler->getPublicServePath() . $this->getFilename());
+		die();
 		
 		// read file and output
+		/*
 		$file = $this->saveHandler->getPublicServePath() . $this->getFilename();
 		$mimetype = exif_imagetype($file);
 		header('Content-Type: '.$mimetype);
 		readfile($file);
 		die();
+		*/
 	}
 
 
