@@ -9,6 +9,7 @@ class ProviderCacher implements CacherInterface {
 	protected $imgPath;
 	protected $operations;
 	protected $cacheLifetime;
+	protected $publicPath;
 
 
 	public function __construct(ProviderInterface $provider)
@@ -28,6 +29,8 @@ class ProviderCacher implements CacherInterface {
 		$this->imgPath       = $imgPath;
 		$this->operations    = $operations;
 		$this->cacheLifetime = $cacheLifetime;
+		$this->publicPath = $publicPath;
+
 	}
 
 
