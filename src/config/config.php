@@ -28,6 +28,8 @@ return array(
 		'responsive_flag' => 'responsive',
 		'transform'       => 'transform'
 	),
+	
+	'compression_quality' => 86,
 
 	'cache' => array(
 		'lifetime' => 1,

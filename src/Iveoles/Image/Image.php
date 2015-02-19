@@ -71,6 +71,9 @@ class Image {
 		}else{
 
 			$image = \Imagecow\Image::create($imgPath, Config::get('image::worker'));
+			if ((int) Config::get('image::compression_quality')) {
+				$image->setCompressionQuality(Config::get('image::compression_quality'));
+			}
 			$image->transform($operations);
 			
 			$cacheData = array('mime' => $image->getMimeType(),
