@@ -6,6 +6,7 @@ use KevBaldwyn\Image\Providers\Laravel\Provider as LaravelProvider;
 use KevBaldwyn\Image\Image;
 use KevBaldwyn\Image\Providers\Laravel\Commands\MoveAssetCommand;
 use KevBaldwyn\Image\Cache\ProviderCacher;
+use KevBaldwyn\Image\SaveHandlers\FileSystem;
 
 class ImageServiceProvider extends ServiceProvider {
 
@@ -59,8 +60,7 @@ class ImageServiceProvider extends ServiceProvider {
 	{
 		$app = $this->app;
 		$this->app->bind('kevbaldwyn.image.saveHandler', function() use ($app) {
-			//return new S3Handler();
-			return new FileSystem($provider, '');
+			return new FileSystem(new LaravelProvider($app['kevbaldwyn.image.cache']));
 		});
 	}
 
