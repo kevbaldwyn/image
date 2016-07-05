@@ -5,59 +5,65 @@ use KevBaldwyn\Image\Providers\ProviderInterface;
 
 class FileSystem implements SaveHandlerInterface {
 
-	private $basePath;
+    private $basePath;
 
-	public function __construct(ProviderInterface $provider)
-	{
-		$this->basePath = $provider->publicPath();
-	}
-
-
-	public function setPaths($imgPath, $publicPath)
-	{
-		$this->srcPath = $publicPath . $imgPath;
-		$this->savePath = dirname($this->srcPath) . '/';
-	}
+    public function __construct(ProviderInterface $provider)
+    {
+        $this->basePath = $provider->publicPath();
+    }
 
 
-	public function getPublicPath()
-	{
-		return $this->basePath;
-	}
+    public function setPaths($imgPath, $publicPath)
+    {
+        $this->srcPath = $publicPath . $imgPath;
+        $this->savePath = dirname($this->srcPath) . '/';
+    }
 
 
-	public function getPublicServePath()
-	{
-		return str_replace($this->basePath, '', $this->savePath);
-	}
+    public function getPublicPath()
+    {
+        return $this->basePath;
+    }
 
 
-	public function getSrcPath()
-	{
-		return $this->srcPath;
-	}
+    public function getPublicServePath()
+    {
+        return str_replace($this->basePath, '', $this->savePath);
+    }
 
 
-	public function getSavePath()
-	{
-		return $this->savePath;
-	}
+    public function getSrcPath()
+    {
+        return $this->srcPath;
+    }
 
 
-	public function exists($filename)
-	{
-		$filePath = $this->savePath . $filename;
-		return file_exists($filePath);
-	}
+    public function getSavePath()
+    {
+        return $this->savePath;
+    }
 
 
-	public function save($filename, array $data)
-	{
-		$path = $this->savePath;
-		if(!is_dir($path)) {
-			mkdir($path, true);
-		}
-		file_put_contents($path . $filename, $data['data']);
-	}
+    public function exists($filename)
+    {
+        $filePath = $this->savePath . $filename;
+        return file_exists($filePath);
+    }
+
+    public function getSize($filename)
+    {
+        $filePath = $this->savePath . $filename;
+        return filesize($filePath);
+    }
+
+
+    public function save($filename, array $data)
+    {
+        $path = $this->savePath;
+        if(!is_dir($path)) {
+            mkdir($path, true);
+        }
+        file_put_contents($path . $filename, $data['data']);
+    }
 
 }
